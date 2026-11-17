@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Trip detail: Sunny studio near BTS Ari</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#0F6B63}a:hover{color:#0A4F49}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #FFFFFF; color: #142020; font-family: Inter, system-ui, sans-serif; font-size: 15px; line-height: 1.55">
+<header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 40px; border-bottom: 1px solid #E3E5E1">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px">
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #142020">
+<span style="width: 34px; height: 34px; border-radius: 9px; background: {{accent}}; display: inline-flex; align-items: center; justify-content: center">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path><path d="M3 21h18"></path><path d="M14 12h.01"></path></svg>
+</span>
+<span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -0.02em">Hongwang</span>
+</a>
+<nav aria-label="Main" style="display: flex; flex-wrap: wrap; gap: 4px">
+<a href="Main.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; color: #3E4A48; text-decoration: none; font-weight: 500">Explore</a>
+<a href="Trips.dc.html" aria-current="page" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; background: #EEF1EE; color: #142020; text-decoration: none; font-weight: 600">Trips</a>
+<a href="Saved.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; color: #3E4A48; text-decoration: none; font-weight: 500">Saved</a>
+<a href="Inbox.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; color: #3E4A48; text-decoration: none; font-weight: 500">Inbox</a>
+</nav>
+</div>
+<div style="display: flex; align-items: center; gap: 10px">
+<a href="Host.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 999px; color: #142020; text-decoration: none; font-weight: 500">Switch to hosting</a>
+<a href="Account.dc.html" aria-label="Account settings for Daniel" style="width: 44px; height: 44px; border-radius: 999px; background: #E6E9F2; color: #1E2C55; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; justify-content: center">DM</a>
+</div>
+</header>
+
+<main style="max-width: 1120px; margin: 0 auto; padding: 20px 40px 56px; box-sizing: border-box">
+<a href="Trips.dc.html" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 500; text-decoration: none">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
+All trips
+</a>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 8px 0 4px">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 700; font-size: 34px; letter-spacing: -0.02em; line-height: 1.2">Sunny studio near BTS Ari</h1>
+<span style="padding: 4px 12px; border-radius: 999px; background: {{badgeBg}}; color: {{badgeFg}}; font-size: 13px; font-weight: 600">{{badge}}</span>
+</div>
+<p style="margin: 0 0 24px; color: #3E4A48">Sat, Dec 12 – Tue, Dec 15 · 3 nights · 2 guests · Booking ref BK-7F3K2Q</p>
+
+<sc-if value="{{cancelled}}" hint-placeholder-val="{{false}}">
+<div role="status" style="padding: 16px 20px; border-radius: 16px; background: #FBE9E7; border: 1px solid #EBB8B1; color: #5C1A12; margin-bottom: 24px">
+<strong style="font-weight: 600">Booking cancelled.</strong> ฿2,100 is on its way back to Visa •••• 4242 and should arrive within 5–10 business days. The dates are open to other guests again.
+</div>
+</sc-if>
+
+<div style="display: flex; flex-wrap: wrap; gap: 48px; align-items: flex-start">
+<div style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 28px">
+
+<section aria-label="Timeline">
+<h2 style="margin: 0 0 14px; font-size: 20px; font-weight: 600">Your stay</h2>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column">
+<sc-for list="{{timeline}}" as="s" hint-placeholder-count="5">
+<li style="display: flex; gap: 14px">
+<span style="display: flex; flex-direction: column; align-items: center">
+<span style="width: 24px; height: 24px; flex: none; border-radius: 999px; background: {{s.dotBg}}; border: 2px solid {{s.dotBorder}}; box-sizing: border-box; color: #FFFFFF; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{s.mark}}</span>
+<sc-if value="{{s.hasLine}}" hint-placeholder-val="{{true}}"><span aria-hidden="true" style="width: 2px; flex: 1; min-height: 22px; background: #D5D9D4"></span></sc-if>
+</span>
+<span style="padding-bottom: 16px">
+<span style="display: block; font-weight: 600">{{s.title}}</span>
+<span style="display: block; color: #5A6664; font-size: 14px">{{s.when}}</span>
+</span>
+</li>
+</sc-for>
+</ol>
+</section>
+
+<section aria-label="Check-in details" style="padding: 20px; border-radius: 18px; background: #F6F7F5; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 600">Getting in</h2>
+<span style="display: inline-flex; align-items: center; gap: 6px; color: #0A4F49; font-size: 13px; font-weight: 600">
+<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"></path></svg>
+Unlocked when you paid
+</span>
+</div>
+<dl style="margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 24px">
+<div><dt style="font-weight: 600">Address</dt><dd style="margin: 2px 0 0; color: #3E4A48">[FULL ADDRESS], Phahon Yothin Soi 7, Ari, Bangkok 10400</dd></div>
+<div><dt style="font-weight: 600">Keycard code</dt><dd style="margin: 2px 0 0; color: #3E4A48">Arrives Sat, Dec 12 at 10:00</dd></div>
+<div><dt style="font-weight: 600">Check-in</dt><dd style="margin: 2px 0 0; color: #3E4A48">From 14:00, self check-in at the lobby</dd></div>
+<div><dt style="font-weight: 600">Check-out</dt><dd style="margin: 2px 0 0; color: #3E4A48">By 11:00, leave the card in the room</dd></div>
+</dl>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #142020; background: #FFFFFF; color: #142020; font: inherit; font-weight: 600; cursor: pointer">Get directions</button>
+<button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; color: #142020; font: inherit; font-weight: 500; cursor: pointer">Add to calendar</button>
+</div>
+</section>
+
+<section aria-label="Your host" style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding-bottom: 24px; border-bottom: 1px solid #E3E5E1">
+<span aria-hidden="true" style="width: 52px; height: 52px; flex: none; border-radius: 999px; background: #E3EFEC; color: #0A4F49; display: flex; align-items: center; justify-content: center; font-weight: 600">PK</span>
+<div style="flex: 1 1 240px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 600">Ploy is your host</h2>
+<p style="margin: 2px 0 0; color: #3E4A48">Phone [HOST PHONE] · LINE [HOST LINE ID]</p>
+</div>
+<a href="Inbox.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 10px; background: {{accent}}; color: #FFFFFF; text-decoration: none; font-weight: 600">Message Ploy</a>
+</section>
+
+<section aria-label="Manage booking" style="display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-size: 20px; font-weight: 600">Manage booking</h2>
+<sc-if value="{{canManage}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; color: #142020; font: inherit; font-weight: 500; cursor: pointer">Ask to change dates</button>
+<button type="button" onClick="{{openCancel}}" aria-expanded="{{cancelExpanded}}" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #A3291C; background: #FFFFFF; color: #A3291C; font: inherit; font-weight: 600; cursor: pointer">Cancel booking</button>
+</div>
+</sc-if>
+<sc-if value="{{cancelOpen}}" hint-placeholder-val="{{false}}">
+<div style="padding: 20px; border-radius: 16px; border: 1px solid #EBB8B1; background: #FFFFFF; display: flex; flex-direction: column; gap: 14px">
+<h3 style="margin: 0; font-size: 18px; font-weight: 600">Cancel this booking?</h3>
+<p style="margin: 0; color: #3E4A48">Your policy is Moderate: a full refund until Mon, Dec 7. Check-in is now less than 5 days away, so you get half the nightly total back.</p>
+<table style="width: 100%; border-collapse: collapse; font-size: 14px">
+<thead><tr style="text-align: left; color: #3E4A48"><th scope="col" style="padding: 8px 0; font-weight: 600; border-bottom: 1px solid #E3E5E1">Item</th><th scope="col" style="padding: 8px 0; font-weight: 600; border-bottom: 1px solid #E3E5E1; text-align: right">Paid</th><th scope="col" style="padding: 8px 0; font-weight: 600; border-bottom: 1px solid #E3E5E1; text-align: right">Refund</th></tr></thead>
+<tbody>
+<tr><td style="padding: 8px 0">3 nights</td><td style="padding: 8px 0; text-align: right">฿3,600</td><td style="padding: 8px 0; text-align: right">฿1,800</td></tr>
+<tr><td style="padding: 8px 0">Cleaning fee</td><td style="padding: 8px 0; text-align: right">฿300</td><td style="padding: 8px 0; text-align: right">฿300</td></tr>
+<tr><td style="padding: 8px 0">Service fee</td><td style="padding: 8px 0; text-align: right">฿390</td><td style="padding: 8px 0; text-align: right">฿0</td></tr>
+<tr style="font-weight: 600"><td style="padding: 10px 0; border-top: 1px solid #E3E5E1">Total</td><td style="padding: 10px 0; border-top: 1px solid #E3E5E1; text-align: right">฿4,290</td><td style="padding: 10px 0; border-top: 1px solid #E3E5E1; text-align: right">฿2,100</td></tr>
+</tbody>
+</table>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Reason
+<select style="min-height: 48px; padding: 0 12px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; font: inherit; font-weight: 400; color: #142020">
+<option>Choose a reason</option>
+<option>My plans changed</option>
+<option>I found another place</option>
+<option>Something is wrong with the listing</option>
+<option>Other</option>
+</select>
+</label>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<button type="button" onClick="{{closeCancel}}" style="flex: 1 1 160px; min-height: 48px; border-radius: 12px; border: 1px solid #142020; background: #FFFFFF; color: #142020; font: inherit; font-weight: 600; cursor: pointer">Keep booking</button>
+<button type="button" onClick="{{confirmCancel}}" style="flex: 1 1 200px; min-height: 48px; border-radius: 12px; border: 0; background: #A3291C; color: #FFFFFF; font: inherit; font-weight: 600; cursor: pointer">Cancel and refund ฿2,100</button>
+</div>
+</div>
+</sc-if>
+<p style="margin: 0; color: #5A6664; font-size: 14px">Something wrong when you arrive? <a href="Inbox.dc.html">Report a problem</a> within 24 hours of check-in and the host's payout stays on hold while we look into it.</p>
+</section>
+</div>
+
+<aside aria-label="Receipt" style="flex: 1 1 320px; min-width: 0">
+<div style="border: 1px solid #D5D9D4; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+<div aria-hidden="true" style="height: 150px; border-radius: 12px; background: #DCE7E3"></div>
+<h2 style="margin: 0; font-size: 18px; font-weight: 600">Receipt</h2>
+<dl style="margin: 0; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; gap: 12px"><dt style="color: #3E4A48">฿1,200 × 3 nights</dt><dd style="margin: 0">฿3,600</dd></div>
+<div style="display: flex; justify-content: space-between; gap: 12px"><dt style="color: #3E4A48">Cleaning fee</dt><dd style="margin: 0">฿300</dd></div>
+<div style="display: flex; justify-content: space-between; gap: 12px"><dt style="color: #3E4A48">Service fee</dt><dd style="margin: 0">฿390</dd></div>
+<div style="display: flex; justify-content: space-between; gap: 12px; padding-top: 12px; border-top: 1px solid #E3E5E1; font-weight: 600"><dt>Paid</dt><dd style="margin: 0">฿4,290</dd></div>
+</dl>
+<p style="margin: 0; color: #5A6664; font-size: 14px">Visa •••• 4242 · Thu, Dec 10, 14:07</p>
+<button type="button" style="min-height: 44px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; color: #142020; font: inherit; font-weight: 500; cursor: pointer">Download receipt (PDF)</button>
+</div>
+</aside>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#0F6B63","options":["#0F6B63","#1F4FD1","#B4472A","#2E2A26"]},"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const accent = this.props.accent ?? '#0F6B63';
+    const cancelled = !!st.cancelled;
+    const cancelOpen = !!st.cancelOpen && !cancelled;
+    const done = { dotBg: accent, dotBorder: accent, mark: '✓' };
+    const next = { dotBg: '#FFFFFF', dotBorder: accent, mark: '' };
+    const later = { dotBg: '#FFFFFF', dotBorder: '#C9CFCA', mark: '' };
+    const timeline = cancelled ? [
+      Object.assign({ title: 'Reserved and paid', when: 'Thu, Dec 10, 14:07', hasLine: true }, done),
+      Object.assign({ title: 'Cancelled by you', when: 'Thu, Dec 10 · ฿2,100 refunded', hasLine: false }, { dotBg: '#A3291C', dotBorder: '#A3291C', mark: '✕' })
+    ] : [
+      Object.assign({ title: 'Reserved', when: 'Thu, Dec 10, 14:02 · dates held for 15 minutes', hasLine: true }, done),
+      Object.assign({ title: 'Paid ฿4,290', when: 'Thu, Dec 10, 14:07 · booking confirmed', hasLine: true }, done),
+      Object.assign({ title: 'Check in', when: 'Sat, Dec 12 from 14:00', hasLine: true }, next),
+      Object.assign({ title: 'Check out', when: 'Tue, Dec 15 by 11:00', hasLine: true }, later),
+      Object.assign({ title: 'Review Ploy', when: 'Opens Dec 15, closes Dec 29', hasLine: false }, later)
+    ];
+    return {
+      accent,
+      timeline,
+      cancelled,
+      cancelOpen,
+      canManage: !cancelled,
+      cancelExpanded: cancelOpen ? 'true' : 'false',
+      badge: cancelled ? 'Cancelled by you' : 'Confirmed',
+      badgeBg: cancelled ? '#FBE9E7' : '#E3EFEC',
+      badgeFg: cancelled ? '#5C1A12' : '#0A4F49',
+      openCancel: () => this.setState({ cancelOpen: true }),
+      closeCancel: () => this.setState({ cancelOpen: false }),
+      confirmCancel: () => this.setState({ cancelled: true, cancelOpen: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

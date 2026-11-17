@@ -1,0 +1,26 @@
+{
+  "name": "hongwang",
+  "private": true,
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "db:generate": "pnpm --filter @hongwang/api db:generate",
+    "db:migrate": "pnpm --filter @hongwang/api db:migrate",
+    "db:seed": "pnpm --filter @hongwang/api db:seed",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "turbo": "^2.11.11",
+    "typescript": "5.9.3"
+  }
+}

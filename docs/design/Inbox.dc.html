@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Inbox</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#0F6B63}a:hover{color:#0A4F49}
+textarea::placeholder{color:#6B7573}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #FFFFFF; color: #142020; font-family: Inter, system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+<header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 40px; border-bottom: 1px solid #E3E5E1">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px">
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #142020">
+<span style="width: 34px; height: 34px; border-radius: 9px; background: {{accent}}; display: inline-flex; align-items: center; justify-content: center">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path><path d="M3 21h18"></path><path d="M14 12h.01"></path></svg>
+</span>
+<span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -0.02em">Hongwang</span>
+</a>
+<nav aria-label="Main" style="display: flex; flex-wrap: wrap; gap: 4px">
+<a href="Main.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; color: #3E4A48; text-decoration: none; font-weight: 500">Explore</a>
+<a href="Trips.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; color: #3E4A48; text-decoration: none; font-weight: 500">Trips</a>
+<a href="Saved.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; color: #3E4A48; text-decoration: none; font-weight: 500">Saved</a>
+<a href="Inbox.dc.html" aria-current="page" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; background: #EEF1EE; color: #142020; text-decoration: none; font-weight: 600">Inbox</a>
+</nav>
+</div>
+<div style="display: flex; align-items: center; gap: 10px">
+<a href="Host.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 999px; color: #142020; text-decoration: none; font-weight: 500">Switch to hosting</a>
+<a href="Account.dc.html" aria-label="Account settings for Daniel" style="width: 44px; height: 44px; border-radius: 999px; background: #E6E9F2; color: #1E2C55; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; justify-content: center">DM</a>
+</div>
+</header>
+
+<main style="display: flex; flex-wrap: wrap; min-height: 820px">
+<section aria-label="Conversations" style="flex: 1 1 300px; max-width: 360px; border-right: 1px solid #E3E5E1; display: flex; flex-direction: column">
+<div style="padding: 20px 20px 12px">
+<h1 style="margin: 0 0 12px; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 700; font-size: 28px; letter-spacing: -0.02em">Inbox</h1>
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: #3E4A48">Search messages<input type="search" style="min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-size: 15px; font-weight: 400; color: #142020"></label>
+</div>
+<ul style="margin: 0; padding: 0 8px 8px; list-style: none; display: flex; flex-direction: column; gap: 2px">
+<sc-for list="{{threads}}" as="t" hint-placeholder-count="3">
+<li>
+<button type="button" aria-current="{{t.current}}" onClick="{{t.pick}}" style="width: 100%; display: flex; gap: 12px; align-items: flex-start; padding: 12px; border: 0; border-radius: 12px; background: {{t.bg}}; color: #142020; font: inherit; text-align: left; cursor: pointer">
+<span aria-hidden="true" style="width: 44px; height: 44px; flex: none; border-radius: 999px; background: {{t.avatarBg}}; color: {{t.avatarFg}}; display: flex; align-items: center; justify-content: center; font-weight: 600">{{t.initials}}</span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+<span style="display: flex; justify-content: space-between; gap: 8px"><span style="font-weight: {{t.weight}}">{{t.name}}</span><span style="color: #5A6664; font-size: 12px; white-space: nowrap">{{t.time}}</span></span>
+<span style="color: #3E4A48; font-size: 13px">{{t.context}}</span>
+<span style="color: #5A6664; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{t.preview}}</span>
+</span>
+</button>
+</li>
+</sc-for>
+</ul>
+</section>
+
+<section aria-label="{{convLabel}}" style="flex: 999 1 480px; min-width: 0; display: flex; flex-direction: column">
+<div style="padding: 16px 24px; border-bottom: 1px solid #E3E5E1; display: flex; align-items: center; justify-content: space-between; gap: 12px">
+<div>
+<h2 style="margin: 0; font-size: 18px; font-weight: 600">{{active.name}}</h2>
+<p style="margin: 0; color: #5A6664; font-size: 14px">{{active.context}}</p>
+</div>
+<button type="button" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; color: #142020; font: inherit; font-weight: 500; cursor: pointer">Report</button>
+</div>
+<ol aria-label="Messages" style="flex: 1; margin: 0; padding: 20px 24px; list-style: none; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; max-height: 560px; background: #FAFBFA">
+<sc-for list="{{messages}}" as="m" hint-placeholder-count="5">
+<li style="display: flex; justify-content: {{m.align}}">
+<sc-if value="{{m.isSystem}}" hint-placeholder-val="{{false}}">
+<p style="margin: 0 auto; max-width: 520px; padding: 8px 14px; border-radius: 999px; background: #EEF1EE; color: #3E4A48; font-size: 13px; text-align: center">{{m.text}}</p>
+</sc-if>
+<sc-if value="{{m.isChat}}" hint-placeholder-val="{{true}}">
+<div style="max-width: 70%; display: flex; flex-direction: column; gap: 4px; align-items: {{m.itemsAlign}}">
+<p style="margin: 0; padding: 10px 14px; border-radius: 16px; background: {{m.bg}}; color: {{m.fg}}; white-space: pre-wrap">{{m.text}}</p>
+<sc-if value="{{m.masked}}" hint-placeholder-val="{{false}}">
+<span style="font-size: 12px; color: #6B4500; font-weight: 500">Contact details hidden until the booking is confirmed</span>
+</sc-if>
+<span style="font-size: 12px; color: #5A6664">{{m.meta}}</span>
+</div>
+</sc-if>
+</li>
+</sc-for>
+</ol>
+<div style="padding: 16px 24px; border-top: 1px solid #E3E5E1; display: flex; flex-direction: column; gap: 8px">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; color: #3E4A48">Message {{active.first}}
+<textarea rows="3" value="{{draft}}" onChange="{{onDraft}}" placeholder="Write a message" style="resize: vertical; padding: 12px 14px; border-radius: 12px; border: 1px solid #C9CFCA; font: inherit; font-size: 15px; font-weight: 400; color: #142020"></textarea>
+</label>
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px">
+<span style="color: #5A6664; font-size: 13px">{{maskHint}}</span>
+<button type="button" onClick="{{send}}" style="min-height: 44px; padding: 0 22px; border-radius: 10px; border: 0; background: {{accent}}; color: #FFFFFF; font: inherit; font-weight: 600; cursor: pointer">Send</button>
+</div>
+</div>
+</section>
+
+<aside aria-label="Booking" style="flex: 1 1 260px; max-width: 340px; border-left: 1px solid #E3E5E1; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px">
+<div aria-hidden="true" style="height: 140px; border-radius: 12px; background: {{active.tint}}"></div>
+<h2 style="margin: 0; font-size: 17px; font-weight: 600; line-height: 1.35">{{active.listing}}</h2>
+<span style="align-self: flex-start; padding: 3px 10px; border-radius: 999px; background: {{active.badgeBg}}; color: {{active.badgeFg}}; font-size: 13px; font-weight: 600">{{active.status}}</span>
+<p style="margin: 0; color: #3E4A48">{{active.dates}}</p>
+<a href="{{active.href}}" style="display: flex; align-items: center; justify-content: center; min-height: 44px; border-radius: 10px; border: 1px solid #142020; color: #142020; text-decoration: none; font-weight: 600">{{active.cta}}</a>
+</aside>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#0F6B63","options":["#0F6B63","#1F4FD1","#B4472A","#2E2A26"]},"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const accent = this.props.accent ?? '#0F6B63';
+    const sel = st.sel || 'ploy';
+    const extra = st.extra || {};
+    const draft = st.draft ?? '';
+    const defs = {
+      ploy: { name: 'Ploy', first: 'Ploy', initials: 'PK', avatarBg: '#E3EFEC', avatarFg: '#0A4F49', context: 'Sunny studio · Dec 12 – 15', time: 'Thu', listing: 'Sunny studio near BTS Ari', dates: 'Sat, Dec 12 – Tue, Dec 15 · 2 guests', status: 'Confirmed', badgeBg: '#E3EFEC', badgeFg: '#0A4F49', confirmed: true, tint: '#DCE7E3', href: 'TripDetail.dc.html', cta: 'View trip',
+        msgs: [
+          { from: 'me', text: 'Hi Ploy, is the desk big enough for two monitors? You can reach me on [hidden]', masked: true, meta: 'You · Wed, Dec 9, 18:20' },
+          { from: 'them', text: 'Hi Daniel! Yes, it is 140 cm wide. Two monitors fit fine.', meta: 'Ploy · Wed, Dec 9, 18:34' },
+          { from: 'system', text: 'Booking confirmed on Thu, Dec 10. Phone numbers and LINE IDs can now be shared.' },
+          { from: 'them', text: 'See you Saturday! Your keycard code comes on the morning of check-in.', meta: 'Ploy · Thu, Dec 10, 14:30' }
+        ] },
+      pim: { name: 'Pim', first: 'Pim', initials: 'PS', avatarBg: '#EAEEE0', avatarFg: '#3A4A12', context: 'Garden room · Jan 8 – 11', time: 'Tue', listing: 'Garden room in a teak house', dates: 'Fri, Jan 8 – Mon, Jan 11, 2027 · 1 guest', status: 'Request sent', badgeBg: '#EEF1EE', badgeFg: '#142020', confirmed: false, tint: '#E3E8D8', href: 'Trips.dc.html', cta: 'View request',
+        msgs: [
+          { from: 'me', text: 'Hello Pim, I would love to stay in January. Is the garden quiet in the mornings?', meta: 'You · Tue, Dec 8, 09:12' },
+          { from: 'them', text: 'Thanks for asking! Very quiet, just birds. I will confirm your dates by tomorrow.', meta: 'Pim · Tue, Dec 8, 10:05' }
+        ] },
+      support: { name: 'Hongwang support', first: 'support', initials: 'HW', avatarBg: '#142020', avatarFg: '#FFFFFF', context: 'Refund for Corner suite', time: 'Nov 2', listing: 'Corner suite with city view', dates: 'Fri, Nov 20 – Sun, Nov 22', status: 'Cancelled by you', badgeBg: '#FBE9E7', badgeFg: '#5C1A12', confirmed: true, tint: '#DCE4E8', href: 'Trips.dc.html', cta: 'View trip',
+        msgs: [
+          { from: 'them', text: 'Your refund of ฿5,500 has been sent to Visa •••• 4242. It usually shows up within 5 to 10 business days.', meta: 'Support · Mon, Nov 2, 11:40' }
+        ] }
+    };
+    const order = ['ploy', 'pim', 'support'];
+    const threads = order.map((id) => {
+      const d = defs[id];
+      const all = d.msgs.concat(extra[id] || []);
+      const last = all[all.length - 1];
+      return {
+        name: d.name, initials: d.initials, avatarBg: d.avatarBg, avatarFg: d.avatarFg, context: d.context, time: d.time,
+        preview: last.text,
+        current: sel === id ? 'true' : 'false',
+        bg: sel === id ? '#EEF1EE' : 'transparent',
+        weight: id === 'ploy' ? '700' : '600',
+        pick: () => this.setState({ sel: id, draft: '' })
+      };
+    });
+    const a = defs[sel];
+    const messages = a.msgs.concat(extra[sel] || []).map((m) => {
+      const mine = m.from === 'me';
+      return {
+        text: m.text,
+        meta: m.meta || '',
+        masked: !!m.masked,
+        isSystem: m.from === 'system',
+        isChat: m.from !== 'system',
+        align: m.from === 'system' ? 'center' : (mine ? 'flex-end' : 'flex-start'),
+        itemsAlign: mine ? 'flex-end' : 'flex-start',
+        bg: mine ? accent : '#FFFFFF',
+        fg: mine ? '#FFFFFF' : '#142020'
+      };
+    });
+    const maskRe = /(\+?\d[\d\s-]{7,}\d)|(\b[\w.+-]+@[\w-]+\.[\w.]+\b)|(\bline\s*(id)?\s*[:@]?\s*@?[\w.]+)/gi;
+    return {
+      accent,
+      threads,
+      messages,
+      active: a,
+      draft,
+      convLabel: 'Conversation with ' + a.name,
+      maskHint: a.confirmed ? 'You can share contact details on confirmed bookings.' : 'Phone numbers, emails and LINE IDs are hidden until the booking is confirmed.',
+      onDraft: (e) => this.setState({ draft: e.target.value }),
+      send: () => {
+        const text = (draft || '').trim();
+        if (!text) return;
+        let out = text, masked = false;
+        if (!a.confirmed) {
+          out = text.replace(maskRe, () => { masked = true; return '[hidden]'; });
+        }
+        const list = (extra[sel] || []).concat([{ from: 'me', text: out, masked, meta: 'You · just now' }]);
+        this.setState({ extra: Object.assign({}, extra, { [sel]: list }), draft: '' });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

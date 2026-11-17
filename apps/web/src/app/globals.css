@@ -1,0 +1,101 @@
+@import 'tailwindcss';
+
+/*
+ * Hongwang design tokens, taken from the design canvas (docs/design/*.dc.html).
+ * Use these utilities (bg-brand, text-ink, border-line, rounded-card ...) instead of raw hex.
+ */
+@theme {
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-inter), sans-serif;
+
+  /* brand (the accent: buttons, logo tile, selected states, links) */
+  --color-brand: #0f6b63;
+  --color-brand-hover: #0a4f49;
+  --color-brand-soft: #e3efec;
+  --color-brand-line: #a9cfc7;
+  --color-brand-ink: #0a3f3a;
+
+  /* text */
+  --color-ink: #142020;
+  --color-ink-2: #3e4a48;
+  --color-muted: #5a6664;
+  --color-placeholder: #6b7573;
+  --color-disabled: #9aa3a1;
+
+  /* lines and surfaces */
+  --color-line: #e3e5e1;
+  --color-line-strong: #c9cfca;
+  --color-line-card: #d5d9d4;
+  --color-line-soft: #eef0ed;
+  --color-surface: #ffffff;
+  --color-canvas: #f6f7f5; /* host + admin page background */
+  --color-subtle: #eef1ee; /* active nav pill */
+  --color-map: #e6ece6;
+
+  /* status tones */
+  --color-warn-bg: #fdf1dc;
+  --color-warn-line: #efcf92;
+  --color-warn-ink: #6b4500;
+  --color-warn-icon: #8a5a00;
+  --color-danger-bg: #fbe9e7;
+  --color-danger-line: #ebb8b1;
+  --color-danger-ink: #5c1a12;
+  --color-danger: #b4472a;
+  --color-info-bg: #e6e9f2;
+  --color-info-ink: #1e2c55;
+  --color-heart: #c8324b;
+  /* host calendar: payment hold nights (design C2, C5) */
+  --color-hold: #f0a92e;
+  --color-hold-ink: #3a2600;
+
+  /* placeholder photo tints from the design */
+  --color-tint-1: #dce7e3;
+  --color-tint-2: #e8e2d6;
+  --color-tint-3: #dde3ec;
+  --color-tint-4: #e3e8d8;
+  --color-tint-5: #eadbd3;
+  --color-tint-6: #dce4e8;
+
+  --radius-field: 10px;
+  --radius-button: 12px;
+  --radius-card: 16px;
+  --radius-panel: 18px;
+  --radius-sheet: 20px;
+
+  --shadow-pop: 0 1px 4px rgb(20 32 32 / 0.16);
+  --shadow-float: 0 8px 28px rgb(20 32 32 / 0.14);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-surface text-ink font-sans antialiased;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  a {
+    color: var(--color-brand);
+  }
+  a:hover {
+    color: var(--color-brand-hover);
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-placeholder);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+}
+
+@utility font-tabular {
+  font-variant-numeric: tabular-nums;
+}

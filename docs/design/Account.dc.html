@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Account settings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#0F6B63}a:hover{color:#0A4F49}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #FFFFFF; color: #142020; font-family: Inter, system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+<header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 40px; border-bottom: 1px solid #E3E5E1">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px">
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #142020">
+<span style="width: 34px; height: 34px; border-radius: 9px; background: {{accent}}; display: inline-flex; align-items: center; justify-content: center">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path><path d="M3 21h18"></path><path d="M14 12h.01"></path></svg>
+</span>
+<span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -0.02em">Hongwang</span>
+</a>
+<nav aria-label="Main" style="display: flex; flex-wrap: wrap; gap: 4px">
+<a href="Main.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; color: #3E4A48; text-decoration: none; font-weight: 500">Explore</a>
+<a href="Trips.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; color: #3E4A48; text-decoration: none; font-weight: 500">Trips</a>
+<a href="Saved.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; color: #3E4A48; text-decoration: none; font-weight: 500">Saved</a>
+<a href="Inbox.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; color: #3E4A48; text-decoration: none; font-weight: 500">Inbox</a>
+</nav>
+</div>
+<div style="display: flex; align-items: center; gap: 10px">
+<a href="Host.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 999px; color: #142020; text-decoration: none; font-weight: 500">Switch to hosting</a>
+<a href="Account.dc.html" aria-current="page" aria-label="Account settings for Daniel" style="width: 44px; height: 44px; border-radius: 999px; background: #E6E9F2; color: #1E2C55; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; outline: 2px solid #1E2C55; outline-offset: 2px">DM</a>
+</div>
+</header>
+
+<main style="max-width: 1120px; margin: 0 auto; padding: 32px 40px 56px; box-sizing: border-box">
+<h1 style="margin: 0 0 24px; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 700; font-size: 34px; letter-spacing: -0.02em; line-height: 1.2">Account</h1>
+<div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start">
+<nav aria-label="Account sections" style="flex: 1 1 220px; max-width: 260px; display: flex; flex-direction: column; gap: 2px">
+<sc-for list="{{sections}}" as="s" hint-placeholder-count="6">
+<button type="button" aria-current="{{s.current}}" onClick="{{s.pick}}" style="min-height: 44px; padding: 0 14px; border: 0; border-radius: 10px; background: {{s.bg}}; color: #142020; font: inherit; font-weight: {{s.weight}}; text-align: left; cursor: pointer">{{s.label}}</button>
+</sc-for>
+</nav>
+
+<div style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+<sc-if value="{{isProfile}}" hint-placeholder-val="{{true}}">
+<h2 style="margin: 0; font-size: 22px; font-weight: 600">Profile</h2>
+<div style="display: flex; align-items: center; gap: 16px">
+<span aria-hidden="true" style="width: 72px; height: 72px; border-radius: 999px; background: #E6E9F2; color: #1E2C55; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 22px">DM</span>
+<button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; color: #142020; font: inherit; font-weight: 500; cursor: pointer">Upload photo</button>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">First name<input type="text" value="Daniel" style="min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Last name<input type="text" value="M." style="min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></label>
+<label style="grid-column: span 2; display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600"><span style="display: flex; align-items: center; gap: 8px">Email <span style="padding: 2px 8px; border-radius: 999px; background: #E3EFEC; color: #0A4F49; font-size: 12px">Verified</span></span><input type="email" value="[GUEST EMAIL]" style="min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></label>
+<label style="grid-column: span 2; display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600"><span style="display: flex; align-items: center; gap: 8px">Mobile <span style="padding: 2px 8px; border-radius: 999px; background: #E3EFEC; color: #0A4F49; font-size: 12px">Verified</span></span><input type="tel" value="+66 81 234 5678" style="min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></label>
+<label style="grid-column: span 2; display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">About you<textarea rows="3" style="resize: vertical; padding: 12px 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020">Product designer from Singapore. Quiet guest, early riser.</textarea></label>
+</div>
+<p style="margin: 0; color: #5A6664; font-size: 14px">Hosts see your first name, photo and "About you" when you request a stay. Your phone and email stay private until a booking is confirmed.</p>
+<button type="button" style="align-self: flex-start; min-height: 48px; padding: 0 22px; border-radius: 12px; border: 0; background: {{accent}}; color: #FFFFFF; font: inherit; font-weight: 600; cursor: pointer">Save changes</button>
+</sc-if>
+
+<sc-if value="{{isSecurity}}" hint-placeholder-val="{{false}}">
+<h2 style="margin: 0; font-size: 22px; font-weight: 600">Login and security</h2>
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 0; border-bottom: 1px solid #E3E5E1"><div><p style="margin: 0; font-weight: 600">Password</p><p style="margin: 0; color: #5A6664; font-size: 14px">Last changed 3 months ago</p></div><button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; color: #142020; font: inherit; font-weight: 500; cursor: pointer">Change password</button></div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 0; border-bottom: 1px solid #E3E5E1"><div><p style="margin: 0; font-weight: 600">Google</p><p style="margin: 0; color: #5A6664; font-size: 14px">Connected</p></div><button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; color: #142020; font: inherit; font-weight: 500; cursor: pointer">Disconnect</button></div>
+<h3 style="margin: 8px 0 0; font-size: 17px; font-weight: 600">Where you're signed in</h3>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column">
+<li style="display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #EEF0ED"><span>Chrome on macOS · Bangkok</span><span style="color: #0A4F49; font-weight: 600; font-size: 14px">This device</span></li>
+<li style="display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #EEF0ED"><span>Safari on iPhone · Bangkok · 2 days ago</span><button type="button" style="min-height: 44px; padding: 0 12px; border: 0; background: transparent; color: #A3291C; font: inherit; font-weight: 600; cursor: pointer">Sign out</button></li>
+</ul>
+<button type="button" style="align-self: flex-start; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #A3291C; background: #FFFFFF; color: #A3291C; font: inherit; font-weight: 600; cursor: pointer">Sign out everywhere else</button>
+</sc-if>
+
+<sc-if value="{{isPayments}}" hint-placeholder-val="{{false}}">
+<h2 style="margin: 0; font-size: 22px; font-weight: 600">Payment methods</h2>
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 16px; border: 1px solid #E3E5E1; border-radius: 14px">
+<div><p style="margin: 0; font-weight: 600">Visa •••• 4242 <span style="margin-left: 6px; padding: 2px 8px; border-radius: 999px; background: #EEF1EE; font-size: 12px">Default</span></p><p style="margin: 0; color: #5A6664; font-size: 14px">Expires 12/28</p></div>
+<button type="button" style="min-height: 44px; padding: 0 14px; border: 0; background: transparent; color: #A3291C; font: inherit; font-weight: 600; cursor: pointer">Remove</button>
+</div>
+<button type="button" style="align-self: flex-start; min-height: 48px; padding: 0 20px; border-radius: 12px; border: 1px solid #142020; background: #FFFFFF; color: #142020; font: inherit; font-weight: 600; cursor: pointer">Add a card</button>
+<p style="margin: 0; color: #5A6664; font-size: 14px">PromptPay QR and mobile banking are chosen at checkout and aren't stored. Card details are kept by our payment provider, never on Hongwang's servers. Hosting payouts are set up in <a href="Earnings.dc.html">Earnings</a>.</p>
+</sc-if>
+
+<sc-if value="{{isNotifications}}" hint-placeholder-val="{{false}}">
+<h2 style="margin: 0; font-size: 22px; font-weight: 600">Notifications</h2>
+<div style="overflow-x: auto">
+<table style="width: 100%; min-width: 520px; border-collapse: collapse">
+<thead><tr style="text-align: left; color: #3E4A48; font-size: 14px"><th scope="col" style="padding: 10px 0; font-weight: 600; border-bottom: 1px solid #E3E5E1">Event</th><th scope="col" style="padding: 10px; font-weight: 600; border-bottom: 1px solid #E3E5E1; text-align: center">Email</th><th scope="col" style="padding: 10px; font-weight: 600; border-bottom: 1px solid #E3E5E1; text-align: center">LINE</th><th scope="col" style="padding: 10px; font-weight: 600; border-bottom: 1px solid #E3E5E1; text-align: center">Push</th></tr></thead>
+<tbody>
+<sc-for list="{{notif}}" as="n" hint-placeholder-count="5">
+<tr>
+<th scope="row" style="padding: 12px 0; border-bottom: 1px solid #EEF0ED; text-align: left; font-weight: 500">{{n.label}}<span style="display: block; color: #5A6664; font-size: 13px; font-weight: 400">{{n.sub}}</span></th>
+<td style="padding: 12px; border-bottom: 1px solid #EEF0ED; text-align: center"><input type="checkbox" aria-label="{{n.emailLabel}}" checked="{{n.email}}" onChange="{{n.tEmail}}" style="width: 20px; height: 20px; accent-color: {{accent}}"></td>
+<td style="padding: 12px; border-bottom: 1px solid #EEF0ED; text-align: center"><input type="checkbox" aria-label="{{n.lineLabel}}" checked="{{n.line}}" onChange="{{n.tLine}}" style="width: 20px; height: 20px; accent-color: {{accent}}"></td>
+<td style="padding: 12px; border-bottom: 1px solid #EEF0ED; text-align: center"><input type="checkbox" aria-label="{{n.pushLabel}}" checked="{{n.push}}" onChange="{{n.tPush}}" style="width: 20px; height: 20px; accent-color: {{accent}}"></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+<p style="margin: 0; color: #5A6664; font-size: 14px">Booking and payment emails are always sent, because they hold your receipt and check-in details.</p>
+</sc-if>
+
+<sc-if value="{{isRegion}}" hint-placeholder-val="{{false}}">
+<h2 style="margin: 0; font-size: 22px; font-weight: 600">Language and region</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Language<select style="min-height: 48px; padding: 0 12px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; font: inherit; font-weight: 400; color: #142020"><option>English</option><option lang="th">ไทย</option></select></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Currency<select style="min-height: 48px; padding: 0 12px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; font: inherit; font-weight: 400; color: #142020"><option>Thai baht (฿)</option><option>US dollar ($)</option><option>Singapore dollar (S$)</option></select></label>
+<label style="grid-column: span 2; display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Time zone<select style="min-height: 48px; padding: 0 12px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; font: inherit; font-weight: 400; color: #142020"><option>Asia/Bangkok (UTC+7)</option><option>Asia/Singapore (UTC+8)</option></select></label>
+</div>
+<p style="margin: 0; color: #5A6664; font-size: 14px">You always pay in Thai baht. Other currencies are shown as estimates.</p>
+</sc-if>
+
+<sc-if value="{{isPrivacy}}" hint-placeholder-val="{{false}}">
+<h2 style="margin: 0; font-size: 22px; font-weight: 600">Privacy and data</h2>
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 0; border-bottom: 1px solid #E3E5E1"><div><p style="margin: 0; font-weight: 600">Download your data</p><p style="margin: 0; color: #5A6664; font-size: 14px">Bookings, messages and reviews as a ZIP file, emailed within 48 hours</p></div><button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; color: #142020; font: inherit; font-weight: 500; cursor: pointer">Request download</button></div>
+<div style="padding: 18px; border-radius: 14px; border: 1px solid #EBB8B1; background: #FFFFFF; display: flex; flex-direction: column; gap: 8px">
+<p style="margin: 0; font-weight: 600; color: #7A1F14">Delete account</p>
+<p style="margin: 0; color: #3E4A48; font-size: 14px">You can't delete your account while you have an upcoming stay or an open payout. Receipts are kept for 7 years for tax reasons.</p>
+<button type="button" disabled="{{true}}" style="align-self: flex-start; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #C9CFCA; background: #F6F7F5; color: #5A6664; font: inherit; font-weight: 600">Delete account (1 upcoming stay)</button>
+</div>
+</sc-if>
+</div>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#0F6B63","options":["#0F6B63","#1F4FD1","#B4472A","#2E2A26"]},"$preview":{"width":1440,"height":1200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const accent = this.props.accent ?? '#0F6B63';
+    const sec = st.sec || 'profile';
+    const prefs = st.prefs || {
+      booking: { email: true, line: true, push: true },
+      messages: { email: false, line: true, push: true },
+      reviews: { email: true, line: false, push: true },
+      prices: { email: true, line: false, push: false },
+      offers: { email: false, line: false, push: false }
+    };
+    const list = [['profile', 'Profile'], ['security', 'Login and security'], ['payments', 'Payment methods'], ['notifications', 'Notifications'], ['region', 'Language and region'], ['privacy', 'Privacy and data']];
+    const sections = list.map(([id, label]) => ({
+      label,
+      current: sec === id ? 'page' : 'false',
+      bg: sec === id ? '#EEF1EE' : 'transparent',
+      weight: sec === id ? '600' : '500',
+      pick: () => this.setState({ sec: id })
+    }));
+    const rows = [['booking', 'Booking updates', 'Requests, holds, confirmations, check-in codes'], ['messages', 'Messages', 'New messages from hosts or guests'], ['reviews', 'Reviews', 'Reminders and when a review goes live'], ['prices', 'Saved rooms', 'Price drops and availability'], ['offers', 'Tips and offers', 'Occasional news from Hongwang']];
+    const flip = (id, ch) => () => {
+      const next = Object.assign({}, prefs);
+      next[id] = Object.assign({}, prefs[id], { [ch]: !prefs[id][ch] });
+      this.setState({ prefs: next });
+    };
+    const notif = rows.map(([id, label, sub]) => ({
+      label, sub,
+      email: prefs[id].email, line: prefs[id].line, push: prefs[id].push,
+      emailLabel: label + ' by email', lineLabel: label + ' on LINE', pushLabel: label + ' as push notifications',
+      tEmail: flip(id, 'email'), tLine: flip(id, 'line'), tPush: flip(id, 'push')
+    }));
+    return {
+      accent, sections, notif,
+      isProfile: sec === 'profile',
+      isSecurity: sec === 'security',
+      isPayments: sec === 'payments',
+      isNotifications: sec === 'notifications',
+      isRegion: sec === 'region',
+      isPrivacy: sec === 'privacy'
+    };
+  }
+}
+</script>
+</body>
+</html>

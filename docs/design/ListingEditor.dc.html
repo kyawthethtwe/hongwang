@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Listing editor</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#F6F7F5}
+a{color:#0F6B63}a:hover{color:#0A4F49}
+input::placeholder,textarea::placeholder{color:#6B7573}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F6F7F5; color: #142020; font-family: Inter, system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+<header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 40px; background: #FFFFFF; border-bottom: 1px solid #E3E5E1">
+<div style="display: flex; align-items: center; gap: 16px">
+<a href="Host.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #142020">
+<span style="width: 34px; height: 34px; border-radius: 9px; background: {{accent}}; display: inline-flex; align-items: center; justify-content: center">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path><path d="M3 21h18"></path><path d="M14 12h.01"></path></svg>
+</span>
+<span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -0.02em">Hongwang</span>
+</a>
+<span style="color: #3E4A48; font-weight: 500">Shophouse room in Charoen Krung · <span style="color: #5A6664">Draft, saved 2 min ago</span></span>
+</div>
+<div style="display: flex; align-items: center; gap: 8px">
+<a href="Listing.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; color: #142020; text-decoration: none; font-weight: 500">Preview</a>
+<a href="HostListings.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; color: #142020; text-decoration: none; font-weight: 500">Save and exit</a>
+</div>
+</header>
+
+<div style="max-width: 1200px; margin: 0 auto; padding: 28px 40px 56px; box-sizing: border-box; display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start">
+<nav aria-label="Listing sections" style="flex: 1 1 240px; max-width: 280px; display: flex; flex-direction: column; gap: 6px">
+<p style="margin: 0 0 6px; color: #3E4A48; font-size: 14px; font-weight: 600">{{doneCount}} of 7 sections done</p>
+<div aria-hidden="true" style="height: 6px; border-radius: 999px; background: #E3E5E1; margin-bottom: 10px"><div style="height: 6px; border-radius: 999px; background: {{accent}}; width: {{progress}}"></div></div>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px">
+<sc-for list="{{steps}}" as="s" hint-placeholder-count="8">
+<li>
+<button type="button" aria-current="{{s.current}}" onClick="{{s.pick}}" style="width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px; background: {{s.bg}}; color: #142020; font: inherit; font-weight: {{s.weight}}; text-align: left; cursor: pointer">
+{{s.label}}
+<span style="font-size: 13px; font-weight: 600; color: {{s.statusColor}}">{{s.statusText}}</span>
+</button>
+</li>
+</sc-for>
+</ol>
+</nav>
+
+<section aria-label="{{stepTitle}}" style="flex: 999 1 560px; min-width: 0; background: #FFFFFF; border: 1px solid #E3E5E1; border-radius: 20px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+<div>
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 700; font-size: 28px; letter-spacing: -0.02em; line-height: 1.2">{{stepTitle}}</h1>
+<p style="margin: 4px 0 0; color: #3E4A48">{{stepHint}}</p>
+</div>
+
+<sc-if value="{{isBasics}}" hint-placeholder-val="{{false}}">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Title<input type="text" value="Shophouse room in Charoen Krung" maxlength="60" style="min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"><span style="font-weight: 400; color: #5A6664; font-size: 13px">31 of 60 characters</span></label>
+<fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-wrap: wrap; gap: 10px"><legend style="padding: 0; margin-bottom: 8px; font-size: 14px; font-weight: 600">What guests get</legend>
+<label style="flex: 1 1 160px; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px; border-radius: 12px; border: 1px solid #D5D9D4"><input type="radio" name="kind" style="width: 20px; height: 20px; accent-color: {{accent}}">Entire place</label>
+<label style="flex: 1 1 160px; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px; border-radius: 12px; border: 2px solid {{accent}}"><input type="radio" name="kind" checked="{{true}}" style="width: 20px; height: 20px; accent-color: {{accent}}">Private room</label>
+<label style="flex: 1 1 160px; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px; border-radius: 12px; border: 1px solid #D5D9D4"><input type="radio" name="kind" style="width: 20px; height: 20px; accent-color: {{accent}}">Shared room</label>
+</fieldset>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Property type<select style="min-height: 48px; padding: 0 10px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; font: inherit; font-weight: 400; color: #142020"><option>Shophouse</option><option>Condo</option><option>House</option><option>Apartment</option><option>Townhouse</option></select></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Size (m²)<input type="number" value="24" style="min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Guests<input type="number" value="2" style="min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Beds<input type="number" value="1" style="min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Bathrooms<input type="number" value="1" style="min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></label>
+</div>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Description<textarea rows="4" placeholder="What makes the room and the street special?" style="resize: vertical; padding: 12px 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></textarea></label>
+</sc-if>
+
+<sc-if value="{{isLocation}}" hint-placeholder-val="{{false}}">
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
+<label style="grid-column: span 2; display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Street address<input type="text" value="[STREET ADDRESS], Charoen Krung Rd" style="min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Subdistrict (khwaeng)<input type="text" value="Talat Noi" style="min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">District (khet)<input type="text" value="Samphanthawong" style="min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Province<select style="min-height: 48px; padding: 0 10px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; font: inherit; font-weight: 400; color: #142020"><option>Bangkok</option><option>Chiang Mai</option><option>Phuket</option></select></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Postcode<input type="text" inputmode="numeric" value="10100" style="min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></label>
+<label style="grid-column: span 2; display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Nearest train station<select style="min-height: 48px; padding: 0 10px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; font: inherit; font-weight: 400; color: #142020"><option>MRT Hua Lamphong · about 9 min walk</option><option>MRT Wat Mangkon</option><option>None nearby</option></select></label>
+</div>
+<div style="position: relative; height: 220px; border-radius: 14px; background: #E6ECE6; overflow: hidden">
+<div aria-hidden="true" style="position: absolute; left: -10%; top: 46%; width: 120%; height: 12px; background: #FFFFFF; transform: rotate(-4deg)"></div>
+<div aria-hidden="true" style="position: absolute; left: 0; bottom: 0; width: 100%; height: 26%; background: #CFE0E6"></div>
+<span aria-hidden="true" style="position: absolute; left: 50%; top: 38%; transform: translate(-50%, -100%); width: 20px; height: 20px; border-radius: 999px 999px 999px 0; rotate: -45deg; background: {{accent}}; border: 3px solid #FFFFFF"></span>
+<span style="position: absolute; left: 16px; top: 16px; padding: 6px 12px; border-radius: 10px; background: #FFFFFF; font-size: 13px; font-weight: 600">Drag the pin to your front door</span>
+</div>
+<p style="margin: 0; color: #5A6664; font-size: 14px">Guests see only a rough area until their booking is confirmed.</p>
+</sc-if>
+
+<sc-if value="{{isPhotos}}" hint-placeholder-val="{{true}}">
+<label style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 150px; padding: 20px; border-radius: 16px; border: 2px dashed #9AA3A1; background: #FAFBFA; text-align: center; cursor: pointer">
+<svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3E4A48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"></path></svg>
+<span style="font-weight: 600">Drop photos here or browse</span>
+<span style="color: #5A6664; font-size: 13px">JPG, PNG or HEIC · up to 20 MB each · landscape works best</span>
+<input type="file" accept="image/*" multiple onChange="{{addPhoto}}" style="position: absolute; inset: 0; opacity: 0; cursor: pointer">
+</label>
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px">
+<p style="margin: 0; font-weight: 600">{{photoCount}} of at least 5 photos</p>
+<button type="button" onClick="{{addPhoto}}" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; color: #142020; font: inherit; font-weight: 500; cursor: pointer">Add a sample photo (demo)</button>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px">
+<sc-for list="{{photos}}" as="p" hint-placeholder-count="3">
+<figure style="margin: 0; display: flex; flex-direction: column; gap: 6px">
+<div style="position: relative; aspect-ratio: 4 / 3; border-radius: 12px; background: {{p.tint}}">
+<sc-if value="{{p.cover}}" hint-placeholder-val="{{false}}"><span style="position: absolute; left: 8px; top: 8px; padding: 3px 8px; border-radius: 999px; background: #FFFFFF; font-size: 12px; font-weight: 600">Cover photo</span></sc-if>
+<button type="button" aria-label="{{p.removeLabel}}" onClick="{{p.remove}}" style="position: absolute; right: 6px; top: 6px; width: 36px; height: 36px; border-radius: 999px; border: 0; background: #FFFFFF; color: #142020; font: inherit; font-size: 18px; cursor: pointer">×</button>
+</div>
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600">Caption<input type="text" value="{{p.caption}}" style="min-height: 40px; padding: 0 10px; border-radius: 8px; border: 1px solid #C9CFCA; font: inherit; font-size: 14px; font-weight: 400; color: #142020"></label>
+</figure>
+</sc-for>
+</div>
+<p style="margin: 0; color: #5A6664; font-size: 14px">Drag to reorder. The first photo is the cover. Photos with phone numbers, LINE QR codes or watermarks are rejected in review.</p>
+</sc-if>
+
+<sc-if value="{{isAmenities}}" hint-placeholder-val="{{false}}">
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px">
+<sc-for list="{{amenities}}" as="a" hint-placeholder-count="12">
+<label style="display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px; border-radius: 12px; border: 2px solid {{a.border}}; cursor: pointer"><input type="checkbox" checked="{{a.on}}" onChange="{{a.toggle}}" style="width: 20px; height: 20px; accent-color: {{accent}}">{{a.label}}</label>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{isPricing}}" hint-placeholder-val="{{false}}">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Price per night (฿)<input type="number" inputmode="numeric" placeholder="e.g. 1,100" value="{{priceInput}}" onChange="{{onPrice}}" style="min-height: 52px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-size: 18px; font-weight: 600; color: #142020"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Cleaning fee per stay (฿)<input type="number" inputmode="numeric" value="250" style="min-height: 52px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Weekly discount (%)<input type="number" inputmode="numeric" value="10" style="min-height: 52px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></label>
+</div>
+<div style="padding: 16px 18px; border-radius: 14px; background: #F6F7F5; display: flex; flex-direction: column; gap: 6px">
+<p style="margin: 0; font-weight: 600">{{earnLine}}</p>
+<p style="margin: 0; color: #5A6664; font-size: 14px">Hongwang keeps 5% of the nightly total. Guests pay a separate service fee of about 10%. Similar rooms nearby: [PRICE RANGE].</p>
+</div>
+<label style="display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 14px; border: 1px solid #D5D9D4; cursor: pointer">
+<input type="checkbox" checked="{{instant}}" onChange="{{toggleInstant}}" style="width: 22px; height: 22px; margin: 0; accent-color: {{accent}}">
+<span><span style="display: block; font-weight: 600">Instant book</span><span style="display: block; color: #5A6664; font-size: 14px">Guests book and pay straight away, and the dates are held for 15 minutes while they pay. Turn it off to approve each request yourself within 24 hours.</span></span>
+</label>
+</sc-if>
+
+<sc-if value="{{isAvailability}}" hint-placeholder-val="{{false}}">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Minimum nights<input type="number" value="1" style="min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Maximum nights<input type="number" value="30" style="min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Notice before arrival<select style="min-height: 48px; padding: 0 10px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; font: inherit; font-weight: 400; color: #142020"><option>Same day</option><option selected>1 day</option><option>2 days</option></select></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Bookable up to<select style="min-height: 48px; padding: 0 10px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; font: inherit; font-weight: 400; color: #142020"><option>3 months ahead</option><option selected>6 months ahead</option><option>12 months ahead</option></select></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Check-in from<input type="time" value="14:00" style="min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Check-out by<input type="time" value="11:00" style="min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></label>
+</div>
+<p style="margin: 0; color: #3E4A48">Block single dates and set special prices in the <a href="HostCalendar.dc.html">calendar</a>.</p>
+</sc-if>
+
+<sc-if value="{{isRules}}" hint-placeholder-val="{{false}}">
+<fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 10px"><legend style="padding: 0; margin-bottom: 8px; font-weight: 600">Cancellation policy</legend>
+<sc-for list="{{policies}}" as="p" hint-placeholder-count="3">
+<label style="display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 14px; border: 2px solid {{p.border}}; cursor: pointer"><input type="radio" name="policy" checked="{{p.checked}}" onChange="{{p.pick}}" style="width: 20px; height: 20px; margin: 2px 0 0; accent-color: {{accent}}"><span><span style="display: block; font-weight: 600">{{p.label}}</span><span style="display: block; color: #5A6664; font-size: 14px">{{p.sub}}</span></span></label>
+</sc-for>
+</fieldset>
+<fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-wrap: wrap; gap: 10px"><legend style="padding: 0; margin-bottom: 8px; font-weight: 600">House rules</legend>
+<label style="flex: 1 1 180px; display: flex; align-items: center; gap: 10px; min-height: 48px"><input type="checkbox" style="width: 20px; height: 20px; accent-color: {{accent}}">Smoking allowed</label>
+<label style="flex: 1 1 180px; display: flex; align-items: center; gap: 10px; min-height: 48px"><input type="checkbox" style="width: 20px; height: 20px; accent-color: {{accent}}">Pets allowed</label>
+<label style="flex: 1 1 180px; display: flex; align-items: center; gap: 10px; min-height: 48px"><input type="checkbox" style="width: 20px; height: 20px; accent-color: {{accent}}">Events allowed</label>
+</fieldset>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Anything else guests should know?<textarea rows="3" placeholder="e.g. Shoes off inside. Quiet hours 22:00 to 07:00." style="resize: vertical; padding: 12px 14px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></textarea><span style="font-weight: 400; color: #5A6664; font-size: 13px">No phone numbers, LINE IDs or links. They're removed in review.</span></label>
+</sc-if>
+
+<sc-if value="{{isPublish}}" hint-placeholder-val="{{false}}">
+<sc-if value="{{notSubmitted}}" hint-placeholder-val="{{true}}">
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column">
+<sc-for list="{{checklist}}" as="c" hint-placeholder-count="7">
+<li style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #EEF0ED">
+<span style="display: flex; align-items: center; gap: 10px"><span style="width: 22px; height: 22px; border-radius: 999px; background: {{c.dotBg}}; color: #FFFFFF; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; border: 2px solid {{c.dotBorder}}; box-sizing: border-box">{{c.mark}}</span>{{c.label}}</span>
+<sc-if value="{{c.missing}}" hint-placeholder-val="{{false}}"><button type="button" onClick="{{c.go}}" style="min-height: 40px; padding: 0 12px; border-radius: 8px; border: 1px solid #C9CFCA; background: #FFFFFF; color: #142020; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Finish</button></sc-if>
+</li>
+</sc-for>
+</ul>
+<p style="margin: 0; display: flex; align-items: center; gap: 8px; color: #0A4F49; font-weight: 500"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"></path></svg>Your identity is verified, so this listing can be published.</p>
+<button type="button" onClick="{{submit}}" disabled="{{cannotSubmit}}" style="align-self: flex-start; min-height: 52px; padding: 0 26px; border-radius: 14px; border: 0; background: {{submitBg}}; color: #FFFFFF; font: inherit; font-weight: 600; cursor: pointer">Submit for review</button>
+<sc-if value="{{cannotSubmit}}" hint-placeholder-val="{{true}}"><p style="margin: -8px 0 0; color: #5A6664; font-size: 14px">Finish the sections above to submit.</p></sc-if>
+</sc-if>
+<sc-if value="{{submitted}}" hint-placeholder-val="{{false}}">
+<div role="status" style="padding: 18px 20px; border-radius: 14px; background: #FDF1DC; border: 1px solid #EFCF92; color: #4A3000; display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0"><strong style="font-weight: 600">Submitted for review.</strong> We'll check photos, address and description, usually within 1 business day, and tell you by email and LINE.</p>
+<a href="HostListings.dc.html" style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; background: #142020; color: #FFFFFF; text-decoration: none; font-weight: 600">Back to listings</a>
+</div>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{showNav}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid #E3E5E1">
+<button type="button" onClick="{{back}}" disabled="{{isFirst}}" style="min-height: 48px; padding: 0 20px; border-radius: 12px; border: 1px solid #C9CFCA; background: #FFFFFF; color: #142020; font: inherit; font-weight: 600; cursor: pointer">Back</button>
+<button type="button" onClick="{{saveNext}}" style="min-height: 48px; padding: 0 24px; border-radius: 12px; border: 0; background: {{accent}}; color: #FFFFFF; font: inherit; font-weight: 600; cursor: pointer">Save and continue</button>
+</div>
+</sc-if>
+</section>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#0F6B63","options":["#0F6B63","#1F4FD1","#B4472A","#2E2A26"]},"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const accent = this.props.accent ?? '#0F6B63';
+    const ids = ['basics', 'location', 'photos', 'amenities', 'pricing', 'availability', 'rules', 'publish'];
+    const titles = {
+      basics: ['Basics', 'The title and size guests see first.'],
+      location: ['Location', 'Used for search and the map. The exact address stays private until a booking is confirmed.'],
+      photos: ['Photos', 'Bright, wide shots of the room, the bathroom and the street.'],
+      amenities: ['Amenities', 'Only tick what guests can use without asking.'],
+      pricing: ['Pricing', 'You can change prices any time. Bookings already made keep their price.'],
+      availability: ['Availability', 'Stay lengths, notice and check-in times.'],
+      rules: ['Rules and policy', 'Set expectations and what happens if a guest cancels.'],
+      publish: ['Review and publish', 'Our team checks every new listing before it goes live.']
+    };
+    const step = st.step || 'photos';
+    const done = Object.assign({ basics: true, location: true, photos: false, amenities: true, pricing: false, availability: true, rules: false }, st.done || {});
+    const photoCount = st.photoCount ?? 3;
+    if (photoCount >= 5) done.photos = true;
+    const doneCount = ids.slice(0, 7).filter((id) => done[id]).length;
+    const steps = ids.map((id) => {
+      const cur = id === step;
+      const isPub = id === 'publish';
+      return {
+        label: titles[id][0],
+        current: cur ? 'step' : 'false',
+        bg: cur ? '#FFFFFF' : 'transparent',
+        weight: cur ? '600' : '500',
+        statusText: isPub ? '' : (done[id] ? '✓ Done' : 'To do'),
+        statusColor: done[id] ? '#0A4F49' : '#6B4500',
+        pick: () => this.setState({ step: id })
+      };
+    });
+    const tints = ['#EADBD3', '#E8E2D6', '#DDE3EC', '#DCE7E3', '#E3E8D8', '#E6E9F2', '#F1E7DA', '#DCE4E8'];
+    const caps = ['Room with original wooden shutters', 'Shared kitchen downstairs', 'Charoen Krung Road at dusk', '', '', '', '', ''];
+    const removed = st.removed || {};
+    const photos = [];
+    for (let i = 0; i < photoCount; i++) {
+      if (removed[i]) continue;
+      photos.push({ tint: tints[i % tints.length], caption: caps[i] || '', cover: photos.length === 0, removeLabel: 'Remove photo ' + (i + 1), remove: () => this.setState({ removed: Object.assign({}, removed, { [i]: true }) }) });
+    }
+    const amen = st.amen || { 'Air-con': true, 'Wi-Fi': true, 'Hot water': true, 'Shared kitchen': true, 'Work desk': true };
+    const amenities = ['Air-con', 'Wi-Fi', 'Hot water', 'Washing machine', 'Shared kitchen', 'Work desk', 'Parking', 'Pool', 'Gym', 'Balcony', '24-hour access', 'Pets allowed'].map((l) => ({
+      label: l, on: !!amen[l], border: amen[l] ? accent : '#D5D9D4',
+      toggle: () => this.setState({ amen: Object.assign({}, amen, { [l]: !amen[l] }) })
+    }));
+    const price = st.price ?? '';
+    const num = parseInt(String(price).replace(/[^0-9]/g, ''), 10);
+    const fmt = (n) => Math.round(n).toLocaleString('en-US');
+    const earnLine = num > 0 ? 'Guests see ฿' + fmt(num) + ' a night. You earn ฿' + fmt(num * 0.95) + ' a night after the 5% host fee.' : 'Enter a nightly price to see what you earn.';
+    const policy = st.policy || 'moderate';
+    const policies = [
+      ['flexible', 'Flexible', 'Full refund until 24 hours before check-in.'],
+      ['moderate', 'Moderate', 'Full refund until 5 days before check-in, then 50%.'],
+      ['strict', 'Strict', '50% refund until 7 days before check-in, then no refund.']
+    ].map(([id, label, sub]) => ({ label, sub, checked: policy === id, border: policy === id ? accent : '#D5D9D4', pick: () => this.setState({ policy: id }) }));
+    const checklist = ids.slice(0, 7).map((id) => ({
+      label: titles[id][0],
+      missing: !done[id],
+      mark: done[id] ? '✓' : '',
+      dotBg: done[id] ? accent : '#FFFFFF',
+      dotBorder: done[id] ? accent : '#C9CFCA',
+      go: () => this.setState({ step: id })
+    }));
+    const allDone = doneCount === 7;
+    const submitted = !!st.submitted;
+    const i = ids.indexOf(step);
+    return {
+      accent, steps, photos, amenities, policies, checklist,
+      doneCount: String(doneCount),
+      progress: Math.round((doneCount / 7) * 100) + '%',
+      stepTitle: titles[step][0],
+      stepHint: titles[step][1],
+      isBasics: step === 'basics', isLocation: step === 'location', isPhotos: step === 'photos', isAmenities: step === 'amenities',
+      isPricing: step === 'pricing', isAvailability: step === 'availability', isRules: step === 'rules', isPublish: step === 'publish',
+      photoCount: String(photos.length),
+      addPhoto: () => this.setState({ photoCount: photoCount + 1 }),
+      priceInput: price,
+      onPrice: (e) => this.setState({ price: e.target.value }),
+      earnLine,
+      instant: st.instant ?? false,
+      toggleInstant: () => this.setState({ instant: !(st.instant ?? false) }),
+      cannotSubmit: !allDone,
+      submitBg: allDone ? accent : '#9AA3A1',
+      notSubmitted: !submitted,
+      submitted,
+      submit: () => { if (allDone) this.setState({ submitted: true }); },
+      showNav: step !== 'publish',
+      isFirst: i === 0,
+      back: () => { if (i > 0) this.setState({ step: ids[i - 1] }); },
+      saveNext: () => {
+        const nd = Object.assign({}, st.done || {}, { [step]: true });
+        this.setState({ done: nd, step: ids[Math.min(i + 1, ids.length - 1)] });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

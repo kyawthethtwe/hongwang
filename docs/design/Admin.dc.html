@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin console</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#F6F7F5}
+a{color:#0F6B63}a:hover{color:#0A4F49}
+textarea::placeholder,input::placeholder{color:#6B7573}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F6F7F5; color: #142020; font-family: Inter, system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+<header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 32px; background: #FFFFFF; border-bottom: 1px solid #E3E5E1">
+<div style="display: flex; align-items: center; gap: 10px">
+<span style="width: 34px; height: 34px; border-radius: 9px; background: {{accent}}; display: inline-flex; align-items: center; justify-content: center">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path><path d="M3 21h18"></path><path d="M14 12h.01"></path></svg>
+</span>
+<span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -0.02em">Hongwang</span>
+<span style="padding: 3px 9px; border-radius: 999px; background: #1E2C55; color: #FFFFFF; font-size: 12px; font-weight: 600">Admin</span>
+</div>
+<div style="display: flex; align-items: center; gap: 10px">
+<span style="color: #3E4A48; font-size: 14px">Fern · Trust and safety</span>
+<span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 999px; background: #E6E9F2; color: #1E2C55; font-weight: 600; display: inline-flex; align-items: center; justify-content: center">FN</span>
+</div>
+</header>
+
+<div style="display: flex; flex-wrap: wrap; align-items: stretch; min-height: 1140px">
+<nav aria-label="Admin sections" style="flex: 1 1 220px; max-width: 250px; padding: 20px 12px; background: #FFFFFF; border-right: 1px solid #E3E5E1; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+<button type="button" aria-current="{{t.current}}" onClick="{{t.pick}}" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px; background: {{t.bg}}; color: #142020; font: inherit; font-weight: {{t.weight}}; text-align: left; cursor: pointer">{{t.label}}<sc-if value="{{t.hasCount}}" hint-placeholder-val="{{true}}"><span style="min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: #1E2C55; color: #FFFFFF; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center">{{t.count}}</span></sc-if></button>
+</sc-for>
+</nav>
+
+<main style="flex: 999 1 720px; min-width: 0; padding: 28px 32px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+
+<sc-if value="{{isKyc}}" hint-placeholder-val="{{true}}">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 700; font-size: 30px; letter-spacing: -0.02em">Identity checks</h1>
+<div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+<ul aria-label="Queue" style="flex: 1 1 260px; max-width: 320px; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{kycQueue}}" as="k" hint-placeholder-count="3">
+<li><button type="button" aria-current="{{k.current}}" onClick="{{k.pick}}" style="width: 100%; padding: 14px; border-radius: 14px; border: 2px solid {{k.border}}; background: #FFFFFF; color: #142020; font: inherit; text-align: left; cursor: pointer; display: flex; flex-direction: column; gap: 4px">
+<span style="display: flex; justify-content: space-between; gap: 8px"><span style="font-weight: 600">{{k.name}}</span><span style="color: #5A6664; font-size: 13px">{{k.ago}}</span></span>
+<span style="color: #3E4A48; font-size: 14px">{{k.doc}}</span>
+<span style="align-self: flex-start; padding: 2px 8px; border-radius: 999px; background: {{k.badgeBg}}; color: {{k.badgeFg}}; font-size: 12px; font-weight: 600">{{k.status}}</span>
+</button></li>
+</sc-for>
+</ul>
+<section aria-label="Identity check detail" style="flex: 999 1 420px; min-width: 0; background: #FFFFFF; border: 1px solid #E3E5E1; border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 16px">
+<div>
+<h2 style="margin: 0; font-size: 20px; font-weight: 600">{{kyc.name}}</h2>
+<p style="margin: 2px 0 0; color: #3E4A48">{{kyc.account}}</p>
+<sc-if value="{{kyc.hasNote}}" hint-placeholder-val="{{false}}"><p style="margin: 6px 0 0; color: #6B4500; font-weight: 500">{{kyc.note}}</p></sc-if>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px">
+<sc-for list="{{kyc.docs}}" as="d" hint-placeholder-count="3">
+<figure style="margin: 0; display: flex; flex-direction: column; gap: 6px"><div aria-hidden="true" style="height: 120px; border-radius: 10px; background: #E6E9F2"></div><figcaption style="font-size: 13px; color: #3E4A48">{{d}}</figcaption></figure>
+</sc-for>
+</div>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{kyc.checks}}" as="c" hint-placeholder-count="4">
+<li style="display: flex; align-items: center; gap: 10px"><span style="width: 22px; height: 22px; flex: none; border-radius: 999px; background: {{c.bg}}; color: {{c.fg}}; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center">{{c.mark}}</span>{{c.label}}</li>
+</sc-for>
+</ul>
+<sc-if value="{{kycPending}}" hint-placeholder-val="{{true}}">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; padding-top: 14px; border-top: 1px solid #E3E5E1">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">If rejecting, why?<select style="min-height: 48px; padding: 0 10px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; font: inherit; font-weight: 400; color: #142020"><option>Photo is blurry or cropped</option><option>Name doesn't match the account</option><option>Document has expired</option><option>Selfie doesn't match the ID</option><option>Suspected fraud: escalate</option></select></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Message to host<textarea rows="2" placeholder="Optional" style="resize: vertical; padding: 10px 12px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></textarea></label>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<button type="button" onClick="{{kycReject}}" style="min-height: 48px; padding: 0 20px; border-radius: 12px; border: 1px solid #A3291C; background: #FFFFFF; color: #A3291C; font: inherit; font-weight: 600; cursor: pointer">Reject and ask to retake</button>
+<button type="button" onClick="{{kycApprove}}" style="min-height: 48px; padding: 0 24px; border-radius: 12px; border: 0; background: {{accent}}; color: #FFFFFF; font: inherit; font-weight: 600; cursor: pointer">Approve identity</button>
+</div>
+</sc-if>
+<sc-if value="{{kycDone}}" hint-placeholder-val="{{false}}">
+<p role="status" style="margin: 0; padding: 12px 14px; border-radius: 10px; background: {{kycDoneBg}}; color: {{kycDoneFg}}; font-weight: 500">{{kycDoneText}}</p>
+</sc-if>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{isListings}}" hint-placeholder-val="{{false}}">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 700; font-size: 30px; letter-spacing: -0.02em">Listing reviews</h1>
+<div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+<ul aria-label="Queue" style="flex: 1 1 260px; max-width: 320px; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{lQueue}}" as="k" hint-placeholder-count="2">
+<li><button type="button" aria-current="{{k.current}}" onClick="{{k.pick}}" style="width: 100%; padding: 14px; border-radius: 14px; border: 2px solid {{k.border}}; background: #FFFFFF; color: #142020; font: inherit; text-align: left; cursor: pointer; display: flex; flex-direction: column; gap: 4px">
+<span style="font-weight: 600">{{k.title}}</span>
+<span style="color: #3E4A48; font-size: 14px">{{k.host}} · {{k.ago}}</span>
+<span style="align-self: flex-start; padding: 2px 8px; border-radius: 999px; background: {{k.badgeBg}}; color: {{k.badgeFg}}; font-size: 12px; font-weight: 600">{{k.status}}</span>
+</button></li>
+</sc-for>
+</ul>
+<section aria-label="Listing review detail" style="flex: 999 1 420px; min-width: 0; background: #FFFFFF; border: 1px solid #E3E5E1; border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 16px">
+<div>
+<h2 style="margin: 0; font-size: 20px; font-weight: 600">{{lst.title}}</h2>
+<p style="margin: 2px 0 0; color: #3E4A48">{{lst.meta}}</p>
+</div>
+<div aria-hidden="true" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px"><div style="height: 70px; border-radius: 8px; background: #DDE3EC"></div><div style="height: 70px; border-radius: 8px; background: #E8E2D6"></div><div style="height: 70px; border-radius: 8px; background: #DCE7E3"></div><div style="height: 70px; border-radius: 8px; background: #EADBD3"></div><div style="height: 70px; border-radius: 8px; background: #E3E8D8"></div></div>
+<div style="padding: 14px 16px; border-radius: 12px; background: #F6F7F5">
+<p style="margin: 0 0 4px; font-size: 13px; font-weight: 600; color: #3E4A48">Description</p>
+<p style="margin: 0">{{lst.descBefore}}<mark style="background: #FDE3A7; color: #142020; padding: 0 2px">{{lst.flagged}}</mark>{{lst.descAfter}}</p>
+</div>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{lst.checks}}" as="c" hint-placeholder-count="4">
+<li style="display: flex; align-items: center; gap: 10px"><span style="width: 22px; height: 22px; flex: none; border-radius: 999px; background: {{c.bg}}; color: {{c.fg}}; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center">{{c.mark}}</span>{{c.label}}</li>
+</sc-for>
+</ul>
+<sc-if value="{{lPending}}" hint-placeholder-val="{{true}}">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; padding-top: 14px; border-top: 1px solid #E3E5E1">Message if requesting changes<textarea rows="2" style="resize: vertical; padding: 10px 12px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020">{{lst.suggested}}</textarea></label>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+<button type="button" onClick="{{lChanges}}" style="min-height: 48px; padding: 0 20px; border-radius: 12px; border: 1px solid #142020; background: #FFFFFF; color: #142020; font: inherit; font-weight: 600; cursor: pointer">Request changes</button>
+<button type="button" onClick="{{lPublish}}" disabled="{{lst.blocked}}" style="min-height: 48px; padding: 0 24px; border-radius: 12px; border: 0; background: {{lPublishBg}}; color: #FFFFFF; font: inherit; font-weight: 600; cursor: pointer">Publish</button>
+<sc-if value="{{lst.blocked}}" hint-placeholder-val="{{false}}"><span style="color: #6B4500; font-size: 14px; font-weight: 500">Can't publish until the host's identity is verified</span></sc-if>
+</div>
+</sc-if>
+<sc-if value="{{lDone}}" hint-placeholder-val="{{false}}">
+<p role="status" style="margin: 0; padding: 12px 14px; border-radius: 10px; background: {{lDoneBg}}; color: {{lDoneFg}}; font-weight: 500">{{lDoneText}}</p>
+</sc-if>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{isDisputes}}" hint-placeholder-val="{{false}}">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 700; font-size: 30px; letter-spacing: -0.02em">Disputes</h1>
+<section aria-label="Dispute DP-1042" style="background: #FFFFFF; border: 1px solid #E3E5E1; border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px">
+<div>
+<h2 style="margin: 0; font-size: 20px; font-weight: 600">DP-1042 · Air-con broken for 2 of 3 nights</h2>
+<p style="margin: 2px 0 0; color: #3E4A48">Mia S. (guest) vs Krit (host) · Canal-view room in Bang Rak · Tue, Dec 8 – Fri, Dec 11</p>
+</div>
+<span style="padding: 4px 12px; border-radius: 999px; background: {{dBadgeBg}}; color: {{dBadgeFg}}; font-size: 13px; font-weight: 600">{{dStatus}}</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px">
+<div style="padding: 14px; border-radius: 12px; background: #F6F7F5"><p style="margin: 0; color: #3E4A48; font-size: 13px">Guest paid</p><p style="margin: 2px 0 0; font-weight: 700; font-size: 20px">฿6,270</p></div>
+<div style="padding: 14px; border-radius: 12px; background: #FDF1DC"><p style="margin: 0; color: #6B4500; font-size: 13px">Host payout on hold</p><p style="margin: 2px 0 0; font-weight: 700; font-size: 20px; color: #4A3000">฿5,430</p></div>
+<div style="padding: 14px; border-radius: 12px; background: #F6F7F5"><p style="margin: 0; color: #3E4A48; font-size: 13px">Reported</p><p style="margin: 2px 0 0; font-weight: 700; font-size: 20px">6 h after check-in</p></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px">
+<div style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 8px">
+<h3 style="margin: 0; font-size: 16px; font-weight: 600">Evidence from the guest</h3>
+<div style="display: flex; gap: 8px"><figure style="margin: 0; flex: 1"><div aria-hidden="true" style="height: 100px; border-radius: 10px; background: #E6E9F2"></div><figcaption style="font-size: 13px; color: #3E4A48; margin-top: 4px">Error code on the remote</figcaption></figure><figure style="margin: 0; flex: 1"><div aria-hidden="true" style="height: 100px; border-radius: 10px; background: #E6E9F2"></div><figcaption style="font-size: 13px; color: #3E4A48; margin-top: 4px">Room thermometer at 31 °C</figcaption></figure></div>
+</div>
+<ol aria-label="Messages between guest and host" style="flex: 1 1 300px; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px">
+<li style="padding: 10px 12px; border-radius: 12px; background: #F6F7F5"><span style="display: block; font-size: 13px; color: #5A6664">Mia · Tue, Dec 8, 21:10</span>The air-con isn't cooling at all. Is there a fan?</li>
+<li style="padding: 10px 12px; border-radius: 12px; background: #F6F7F5"><span style="display: block; font-size: 13px; color: #5A6664">Krit · Tue, Dec 8, 22:40</span>Sorry! A technician can come on Thursday.</li>
+<li style="padding: 10px 12px; border-radius: 12px; background: #F6F7F5"><span style="display: block; font-size: 13px; color: #5A6664">Mia · Wed, Dec 9, 03:05</span>Reported a problem to Hongwang support.</li>
+</ol>
+</div>
+<sc-if value="{{dOpen}}" hint-placeholder-val="{{true}}">
+<fieldset style="margin: 0; padding: 14px 0 0; border: 0; border-top: 1px solid #E3E5E1; display: flex; flex-direction: column; gap: 8px">
+<legend style="padding: 0; font-weight: 600">Decision</legend>
+<sc-for list="{{dOptions}}" as="o" hint-placeholder-count="3">
+<label style="display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 12px; border: 2px solid {{o.border}}; cursor: pointer"><input type="radio" name="decision" checked="{{o.checked}}" onChange="{{o.pick}}" style="width: 20px; height: 20px; margin: 2px 0 0; accent-color: {{accent}}"><span><span style="display: block; font-weight: 600">{{o.label}}</span><span style="display: block; color: #5A6664; font-size: 14px">{{o.sub}}</span></span></label>
+</sc-for>
+</fieldset>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600">Note sent to both guest and host<textarea rows="2" style="resize: vertical; padding: 10px 12px; border-radius: 10px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020">The air-con wasn't fixed for 2 of the 3 nights, so we're refunding those nights.</textarea></label>
+<button type="button" onClick="{{decide}}" style="align-self: flex-start; min-height: 48px; padding: 0 24px; border-radius: 12px; border: 0; background: {{accent}}; color: #FFFFFF; font: inherit; font-weight: 600; cursor: pointer">Confirm decision</button>
+</sc-if>
+<sc-if value="{{dClosed}}" hint-placeholder-val="{{false}}">
+<p role="status" style="margin: 0; padding: 12px 14px; border-radius: 10px; background: #E3EFEC; color: #0A3F3A; font-weight: 500">{{dResult}}</p>
+</sc-if>
+</section>
+</sc-if>
+
+<sc-if value="{{isUsers}}" hint-placeholder-val="{{false}}">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 700; font-size: 30px; letter-spacing: -0.02em">Users</h1>
+<label style="display: flex; flex-direction: column; gap: 6px; max-width: 420px; font-size: 14px; font-weight: 600">Search by name, email or booking ref<input type="search" style="min-height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CFCA; background: #FFFFFF; font: inherit; font-weight: 400; color: #142020"></label>
+<div style="background: #FFFFFF; border: 1px solid #E3E5E1; border-radius: 18px; padding: 4px 20px; overflow-x: auto">
+<table style="width: 100%; min-width: 760px; border-collapse: collapse; font-size: 14px">
+<thead><tr style="text-align: left; color: #3E4A48"><th scope="col" style="padding: 12px 12px 12px 0; font-weight: 600; border-bottom: 1px solid #E3E5E1">Name</th><th scope="col" style="padding: 12px; font-weight: 600; border-bottom: 1px solid #E3E5E1">Roles</th><th scope="col" style="padding: 12px; font-weight: 600; border-bottom: 1px solid #E3E5E1">Identity</th><th scope="col" style="padding: 12px; font-weight: 600; border-bottom: 1px solid #E3E5E1">Status</th><th scope="col" style="padding: 12px 0 12px 12px; font-weight: 600; border-bottom: 1px solid #E3E5E1; text-align: right">Action</th></tr></thead>
+<tbody>
+<sc-for list="{{users}}" as="u" hint-placeholder-count="5">
+<tr>
+<td style="padding: 12px 12px 12px 0; border-bottom: 1px solid #EEF0ED; font-weight: 500">{{u.name}}</td>
+<td style="padding: 12px; border-bottom: 1px solid #EEF0ED">{{u.roles}}</td>
+<td style="padding: 12px; border-bottom: 1px solid #EEF0ED">{{u.kyc}}</td>
+<td style="padding: 12px; border-bottom: 1px solid #EEF0ED"><span style="padding: 3px 10px; border-radius: 999px; background: {{u.badgeBg}}; color: {{u.badgeFg}}; font-weight: 600; font-size: 13px">{{u.status}}</span></td>
+<td style="padding: 8px 0 8px 12px; border-bottom: 1px solid #EEF0ED; text-align: right"><button type="button" onClick="{{u.toggle}}" style="min-height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid {{u.btnBorder}}; background: #FFFFFF; color: {{u.btnColor}}; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer">{{u.action}}</button></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</sc-if>
+
+<sc-if value="{{isAudit}}" hint-placeholder-val="{{false}}">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 700; font-size: 30px; letter-spacing: -0.02em">Audit log</h1>
+<p style="margin: -10px 0 0; color: #5A6664">Every admin action, newest first. Entries can't be edited or deleted.</p>
+<div style="background: #FFFFFF; border: 1px solid #E3E5E1; border-radius: 18px; padding: 4px 20px; overflow-x: auto">
+<table style="width: 100%; min-width: 720px; border-collapse: collapse; font-size: 14px">
+<thead><tr style="text-align: left; color: #3E4A48"><th scope="col" style="padding: 12px 12px 12px 0; font-weight: 600; border-bottom: 1px solid #E3E5E1">When</th><th scope="col" style="padding: 12px; font-weight: 600; border-bottom: 1px solid #E3E5E1">Admin</th><th scope="col" style="padding: 12px; font-weight: 600; border-bottom: 1px solid #E3E5E1">Action</th><th scope="col" style="padding: 12px 0 12px 12px; font-weight: 600; border-bottom: 1px solid #E3E5E1">Target</th></tr></thead>
+<tbody>
+<sc-for list="{{audit}}" as="a" hint-placeholder-count="4">
+<tr><td style="padding: 12px 12px 12px 0; border-bottom: 1px solid #EEF0ED; white-space: nowrap; font-weight: {{a.weight}}">{{a.when}}</td><td style="padding: 12px; border-bottom: 1px solid #EEF0ED">{{a.who}}</td><td style="padding: 12px; border-bottom: 1px solid #EEF0ED">{{a.what}}</td><td style="padding: 12px 0 12px 12px; border-bottom: 1px solid #EEF0ED">{{a.target}}</td></tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</sc-if>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#0F6B63","options":["#0F6B63","#1F4FD1","#B4472A","#2E2A26"]},"$preview":{"width":1440,"height":1220}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const accent = this.props.accent ?? '#0F6B63';
+    const tab = st.tab || 'kyc';
+    const log = st.log || [];
+    const add = (what, target) => [{ when: 'Just now', who: 'Fern', what, target, weight: '600' }].concat(log);
+    const ok = { bg: '#E3EFEC', fg: '#0A4F49', mark: '✓' };
+    const warn = { bg: '#FDF1DC', fg: '#6B4500', mark: '!' };
+    const bad = { bg: '#FBE9E7', fg: '#7A1F14', mark: '✕' };
+
+    const kycDec = st.kycDec || {};
+    const kycSel = st.kycSel || 'arthit';
+    const kycDefs = {
+      arthit: { name: 'Arthit T.', ago: '2 h ago', doc: 'Thai national ID card', account: 'Joined Dec 9 · 1 draft listing · Phone verified', note: '', docs: ['Front of card', 'Back of card', 'Selfie holding card'], checks: [[ok, 'Name on ID matches the account'], [ok, 'Not expired (valid until 2031)'], [ok, 'Not used on another account'], [warn, 'Compare the selfie with the ID photo yourself']] },
+      nicha: { name: 'Nicha W.', ago: '5 h ago', doc: 'Passport', account: 'Joined Dec 1 · 1 listing waiting for review', note: '', docs: ['Photo page', 'Selfie holding passport'], checks: [[ok, 'Name on passport matches the account'], [ok, 'Not expired (valid until 2029)'], [ok, 'Not used on another account'], [warn, 'Compare the selfie with the passport photo yourself']] },
+      ben: { name: 'Ben K.', ago: '1 day ago', doc: 'Thai national ID card', account: 'Joined Nov 20 · 2 draft listings', note: 'Resubmitted: the back of the card was blurry last time', docs: ['Front of card', 'Back of card (new)', 'Selfie holding card'], checks: [[ok, 'Name on ID matches the account'], [ok, 'Not expired (valid until 2028)'], [bad, 'Same ID number was used on a suspended account'], [warn, 'Compare the selfie with the ID photo yourself']] }
+    };
+    const kStatus = (id) => kycDec[id] === 'approved' ? ['Approved', '#E3EFEC', '#0A4F49'] : kycDec[id] === 'rejected' ? ['Rejected', '#FBE9E7', '#5C1A12'] : ['Waiting', '#FDF1DC', '#6B4500'];
+    const kycQueue = ['arthit', 'nicha', 'ben'].map((id) => {
+      const d = kycDefs[id], s = kStatus(id);
+      return { name: d.name, ago: d.ago, doc: d.doc, status: s[0], badgeBg: s[1], badgeFg: s[2], current: kycSel === id ? 'true' : 'false', border: kycSel === id ? '#142020' : '#E3E5E1', pick: () => this.setState({ kycSel: id }) };
+    });
+    const kd = kycDefs[kycSel];
+    const kyc = Object.assign({}, kd, { hasNote: !!kd.note, checks: kd.checks.map(([c, label]) => Object.assign({ label }, c)) });
+    const kDecision = kycDec[kycSel];
+
+    const lDec = st.lDec || {};
+    const lSel = st.lSel || 'rooftop';
+    const lDefs = {
+      rooftop: { title: 'Rooftop room in Thonglor', host: 'Ploy K.', ago: 'Wed, Dec 9', meta: 'Ploy K. (identity verified) · Private room · ฿1,650 a night · 9 photos', descBefore: 'A breezy room on the 6th floor with its own rooftop corner, two minutes from Thonglor Soi 10. ', flagged: 'Add me on LINE @ploy.rooftop for a discount', descAfter: '. Quiet building with a lift and a laundry room.', checks: [[bad, 'Contact details in the description (LINE ID)'], [ok, '9 photos, at least 5 needed'], [ok, 'Map pin matches the address'], [ok, 'Price is in the usual range for Thonglor']], suggested: 'Please remove the LINE ID from your description. Guests can message you on Hongwang, and contact details unlock after booking.', blocked: false },
+      huaikhwang: { title: 'Studio near MRT Huai Khwang', host: 'Nicha W.', ago: 'Tue, Dec 8', meta: 'Nicha W. (identity check waiting) · Entire studio · ฿890 a night · 6 photos', descBefore: 'Compact studio above a noodle shop, 4 minutes to MRT Huai Khwang. ', flagged: '', descAfter: 'Fast Wi-Fi, small balcony and a washing machine on the floor.', checks: [[warn, 'Host identity not verified yet'], [ok, '6 photos, at least 5 needed'], [ok, 'Map pin matches the address'], [ok, 'No contact details found']], suggested: '', blocked: true }
+    };
+    const lStatus = (id) => lDec[id] === 'published' ? ['Published', '#E3EFEC', '#0A4F49'] : lDec[id] === 'changes' ? ['Changes requested', '#FBE9E7', '#5C1A12'] : ['Waiting', '#FDF1DC', '#6B4500'];
+    const lQueue = ['rooftop', 'huaikhwang'].map((id) => {
+      const d = lDefs[id], s = lStatus(id);
+      return { title: d.title, host: d.host, ago: d.ago, status: s[0], badgeBg: s[1], badgeFg: s[2], current: lSel === id ? 'true' : 'false', border: lSel === id ? '#142020' : '#E3E5E1', pick: () => this.setState({ lSel: id }) };
+    });
+    const ld = lDefs[lSel];
+    const lst = Object.assign({}, ld, { checks: ld.checks.map(([c, label]) => Object.assign({ label }, c)) });
+    const lDecision = lDec[lSel];
+
+    const dChoice = st.dChoice || 'partial';
+    const dDone = st.dDone || null;
+    const dOptions = [
+      ['full', 'Full refund to guest', 'Mia gets ฿6,270 back. Krit gets no payout for this stay.'],
+      ['partial', 'Refund 2 nights', 'Mia gets ฿3,900 back (2 nights and the cleaning fee). Krit gets ฿1,710 for the night the air-con worked.'],
+      ['host', 'Release payout to host', 'Mia gets nothing back. Krit gets the full ฿5,430.']
+    ].map(([id, label, sub]) => ({ label, sub, checked: dChoice === id, border: dChoice === id ? accent : '#D5D9D4', pick: () => this.setState({ dChoice: id }) }));
+    const dResults = { full: 'Decided: full refund of ฿6,270 to Mia. Krit\'s payout is cancelled.', partial: 'Decided: ฿3,900 refunded to Mia and ฿1,710 released to Krit.', host: 'Decided: the full ฿5,430 payout is released to Krit.' };
+
+    const susp = Object.assign({ jay: true }, st.susp || {});
+    const userDefs = [
+      ['ploy', 'Ploy K.', 'Guest, Host', 'Verified'],
+      ['daniel', 'Daniel M.', 'Guest', 'Not needed'],
+      ['arthit', 'Arthit T.', 'Guest, Host', kycDec.arthit === 'approved' ? 'Verified' : 'Waiting for review'],
+      ['ben', 'Ben K.', 'Guest, Host', 'Resubmitted'],
+      ['jay', 'Jay P.', 'Guest', 'Not needed']
+    ];
+    const users = userDefs.map(([id, name, roles, kycText]) => {
+      const s = !!susp[id];
+      return {
+        name, roles, kyc: kycText,
+        status: s ? (id === 'jay' && !(st.susp && 'jay' in st.susp) ? 'Suspended · 3 chargebacks' : 'Suspended') : 'Active',
+        badgeBg: s ? '#FBE9E7' : '#E3EFEC', badgeFg: s ? '#5C1A12' : '#0A4F49',
+        action: s ? 'Reinstate' : 'Suspend',
+        btnBorder: s ? '#142020' : '#A3291C', btnColor: s ? '#142020' : '#A3291C',
+        toggle: () => this.setState({ susp: Object.assign({}, susp, { [id]: !s }), log: add(s ? 'Reinstated user' : 'Suspended user', name) })
+      };
+    });
+
+    const seed = [
+      { when: 'Today, 09:12', who: 'Fern', what: 'Approved identity', target: 'Ploy K.', weight: '400' },
+      { when: 'Yesterday, 16:40', who: 'Win', what: 'Suspended user (3 chargebacks)', target: 'Jay P.', weight: '400' },
+      { when: 'Yesterday, 11:05', who: 'Fern', what: 'Requested listing changes', target: 'Canal-view room in Bang Rak', weight: '400' },
+      { when: 'Mon, Dec 7, 14:22', who: 'Win', what: 'Refunded booking in full', target: 'BK-2Q9W1L', weight: '400' }
+    ];
+    const pendingKyc = ['arthit', 'nicha', 'ben'].filter((id) => !kycDec[id]).length;
+    const pendingL = ['rooftop', 'huaikhwang'].filter((id) => !lDec[id]).length;
+    const tabsDef = [['kyc', 'Identity checks', pendingKyc], ['listings', 'Listing reviews', pendingL], ['disputes', 'Disputes', dDone ? 0 : 1], ['users', 'Users', 0], ['audit', 'Audit log', 0]];
+    const tabs = tabsDef.map(([id, label, count]) => ({ label, count: String(count), hasCount: count > 0, current: tab === id ? 'page' : 'false', bg: tab === id ? '#EEF1EE' : 'transparent', weight: tab === id ? '600' : '500', pick: () => this.setState({ tab: id }) }));
+
+    return {
+      accent, tabs,
+      isKyc: tab === 'kyc', isListings: tab === 'listings', isDisputes: tab === 'disputes', isUsers: tab === 'users', isAudit: tab === 'audit',
+      kycQueue, kyc,
+      kycPending: !kDecision, kycDone: !!kDecision,
+      kycDoneText: kDecision === 'approved' ? kd.name + ' is verified and can publish listings.' : kd.name + ' was asked to retake the photos.',
+      kycDoneBg: kDecision === 'approved' ? '#E3EFEC' : '#FBE9E7',
+      kycDoneFg: kDecision === 'approved' ? '#0A3F3A' : '#5C1A12',
+      kycApprove: () => this.setState({ kycDec: Object.assign({}, kycDec, { [kycSel]: 'approved' }), log: add('Approved identity', kd.name) }),
+      kycReject: () => this.setState({ kycDec: Object.assign({}, kycDec, { [kycSel]: 'rejected' }), log: add('Rejected identity', kd.name) }),
+      lQueue, lst,
+      lPending: !lDecision, lDone: !!lDecision,
+      lPublishBg: ld.blocked ? '#9AA3A1' : accent,
+      lDoneText: lDecision === 'published' ? ld.title + ' is live.' : 'Changes requested. ' + ld.host + ' has been told what to fix.',
+      lDoneBg: lDecision === 'published' ? '#E3EFEC' : '#FDF1DC',
+      lDoneFg: lDecision === 'published' ? '#0A3F3A' : '#4A3000',
+      lPublish: () => { if (!ld.blocked) this.setState({ lDec: Object.assign({}, lDec, { [lSel]: 'published' }), log: add('Published listing', ld.title) }); },
+      lChanges: () => this.setState({ lDec: Object.assign({}, lDec, { [lSel]: 'changes' }), log: add('Requested listing changes', ld.title) }),
+      dOptions,
+      dOpen: !dDone, dClosed: !!dDone,
+      dStatus: dDone ? 'Resolved' : 'Open · payout on hold',
+      dBadgeBg: dDone ? '#E3EFEC' : '#FDF1DC',
+      dBadgeFg: dDone ? '#0A4F49' : '#6B4500',
+      dResult: dDone ? dResults[dDone] : '',
+      decide: () => this.setState({ dDone: dChoice, log: add('Resolved dispute', 'DP-1042') }),
+      users,
+      audit: log.concat(seed)
+    };
+  }
+}
+</script>
+</body>
+</html>

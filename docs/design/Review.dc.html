@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Review your stay</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#0F6B63}a:hover{color:#0A4F49}
+textarea::placeholder{color:#6B7573}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #FFFFFF; color: #142020; font-family: Inter, system-ui, sans-serif; font-size: 15px; line-height: 1.55">
+<header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 40px; border-bottom: 1px solid #E3E5E1">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px">
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #142020">
+<span style="width: 34px; height: 34px; border-radius: 9px; background: {{accent}}; display: inline-flex; align-items: center; justify-content: center">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path><path d="M3 21h18"></path><path d="M14 12h.01"></path></svg>
+</span>
+<span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -0.02em">Hongwang</span>
+</a>
+<nav aria-label="Main" style="display: flex; flex-wrap: wrap; gap: 4px">
+<a href="Main.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; color: #3E4A48; text-decoration: none; font-weight: 500">Explore</a>
+<a href="Trips.dc.html" aria-current="page" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; background: #EEF1EE; color: #142020; text-decoration: none; font-weight: 600">Trips</a>
+<a href="Saved.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; color: #3E4A48; text-decoration: none; font-weight: 500">Saved</a>
+<a href="Inbox.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; color: #3E4A48; text-decoration: none; font-weight: 500">Inbox</a>
+</nav>
+</div>
+<div style="display: flex; align-items: center; gap: 10px">
+<a href="Host.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 999px; color: #142020; text-decoration: none; font-weight: 500">Switch to hosting</a>
+<a href="Account.dc.html" aria-label="Account settings for Daniel" style="width: 44px; height: 44px; border-radius: 999px; background: #E6E9F2; color: #1E2C55; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; justify-content: center">DM</a>
+</div>
+</header>
+
+<main style="max-width: 760px; margin: 0 auto; padding: 20px 40px 64px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
+<a href="Trips.dc.html" style="align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 500; text-decoration: none">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
+All trips
+</a>
+<div style="display: flex; gap: 16px; align-items: center">
+<div aria-hidden="true" style="width: 96px; height: 72px; flex: none; border-radius: 12px; background: #DDE3EC"></div>
+<div>
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 700; font-size: 30px; letter-spacing: -0.02em; line-height: 1.2">How was Riverside room in Talat Noi?</h1>
+<p style="margin: 4px 0 0; color: #3E4A48">Hosted by Somchai · Sat, Nov 28 – Tue, Dec 1</p>
+</div>
+</div>
+
+<div style="display: flex; gap: 12px; padding: 16px 18px; border-radius: 14px; background: #F6F7F5">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3E4A48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 2px"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+<p style="margin: 0; color: #3E4A48">Reviews are double-blind. Somchai can't see yours until they've reviewed you too, or until Tue, Dec 15, whichever comes first. Neither of you can edit after that.</p>
+</div>
+
+<sc-if value="{{editing}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 24px">
+<sc-for list="{{groups}}" as="g" hint-placeholder-count="6">
+<fieldset style="margin: 0; padding: 0 0 18px; border: 0; border-bottom: 1px solid #E3E5E1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+<legend style="float: left; padding: 0; font-weight: {{g.weight}}; font-size: {{g.size}}">{{g.label}}</legend>
+<span style="display: flex; gap: 2px">
+<sc-for list="{{g.stars}}" as="s" hint-placeholder-count="5">
+<button type="button" aria-label="{{s.label}}" aria-pressed="{{s.pressed}}" onClick="{{s.pick}}" style="width: 44px; height: 44px; border: 0; border-radius: 8px; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer">
+<svg aria-hidden="true" width="{{g.starSize}}" height="{{g.starSize}}" viewBox="0 0 24 24" fill="{{s.fill}}" stroke="{{s.stroke}}" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg>
+</button>
+</sc-for>
+</span>
+</fieldset>
+</sc-for>
+
+<label style="display: flex; flex-direction: column; gap: 6px; font-weight: 600">Public review
+<span style="font-weight: 400; color: #5A6664; font-size: 14px">Shown on the listing with your first name.</span>
+<textarea rows="5" placeholder="What should the next guest know?" style="resize: vertical; padding: 12px 14px; border-radius: 12px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></textarea>
+</label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-weight: 600">Private note to Somchai (optional)
+<span style="font-weight: 400; color: #5A6664; font-size: 14px">Only Somchai sees this. Good for small fixes.</span>
+<textarea rows="3" style="resize: vertical; padding: 12px 14px; border-radius: 12px; border: 1px solid #C9CFCA; font: inherit; font-weight: 400; color: #142020"></textarea>
+</label>
+<div style="display: flex; flex-wrap: wrap; gap: 10px">
+<button type="button" onClick="{{submit}}" style="min-height: 52px; padding: 0 28px; border-radius: 14px; border: 0; background: {{accent}}; color: #FFFFFF; font: inherit; font-weight: 600; cursor: pointer">Submit review</button>
+<a href="Trips.dc.html" style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 20px; font-weight: 500">Save for later</a>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{submitted}}" hint-placeholder-val="{{false}}">
+<div role="status" style="padding: 20px; border-radius: 16px; background: #E3EFEC; border: 1px solid #A9CFC7; color: #0A3F3A; display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-weight: 600; font-size: 17px">Thanks, your review is saved.</p>
+<p style="margin: 0">It goes live when Somchai reviews you, or on Tue, Dec 15. You gave {{overall}} out of 5 overall.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<button type="button" onClick="{{edit}}" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #0A3F3A; background: #FFFFFF; color: #0A3F3A; font: inherit; font-weight: 600; cursor: pointer">Edit review</button>
+<a href="Trips.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; background: #0A4F49; color: #FFFFFF; text-decoration: none; font-weight: 600">Back to trips</a>
+</div>
+</div>
+</sc-if>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#0F6B63","options":["#0F6B63","#1F4FD1","#B4472A","#2E2A26"]},"$preview":{"width":1440,"height":1400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const accent = this.props.accent ?? '#0F6B63';
+    const r = st.r || { overall: 4, clean: 5, accuracy: 4, location: 5, comms: 5, value: 4 };
+    const submitted = !!st.submitted;
+    const defs = [
+      ['overall', 'Overall', true],
+      ['clean', 'Cleanliness', false],
+      ['accuracy', 'Accuracy of the listing', false],
+      ['location', 'Location', false],
+      ['comms', 'Communication', false],
+      ['value', 'Value', false]
+    ];
+    const groups = defs.map(([id, label, big]) => ({
+      label,
+      weight: big ? '600' : '500',
+      size: big ? '20px' : '16px',
+      starSize: big ? '30' : '24',
+      stars: [1, 2, 3, 4, 5].map((n) => ({
+        label: 'Rate ' + label.toLowerCase() + ' ' + n + ' out of 5',
+        pressed: r[id] === n ? 'true' : 'false',
+        fill: n <= r[id] ? '#E0A100' : 'none',
+        stroke: n <= r[id] ? '#B07E00' : '#6B7573',
+        pick: () => this.setState({ r: Object.assign({}, r, { [id]: n }) })
+      }))
+    }));
+    return {
+      accent,
+      groups,
+      overall: String(r.overall),
+      editing: !submitted,
+      submitted,
+      submit: () => this.setState({ submitted: true }),
+      edit: () => this.setState({ submitted: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

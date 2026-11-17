@@ -1,0 +1,39 @@
+# Local infrastructure for development. `pnpm infra:up`
+services:
+  postgres:
+    image: postgis/postgis:17-3.5
+    environment:
+      POSTGRES_USER: hongwang
+      POSTGRES_PASSWORD: hongwang
+      POSTGRES_DB: hongwang
+    ports:
+      - '5433:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - '1025:1025' # SMTP
+      - '8025:8025' # Web UI
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: hongwang
+      MINIO_ROOT_PASSWORD: hongwang-secret
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - miniodata:/data
+
+volumes:
+  pgdata:
+  miniodata:
