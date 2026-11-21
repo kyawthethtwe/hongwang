@@ -31,7 +31,11 @@ export const PASSWORD_MIN_LENGTH = 10;
 
 export const emailSchema = z.email().max(254).transform((v) => v.trim().toLowerCase());
 export const passwordSchema = z.string().min(PASSWORD_MIN_LENGTH, `At least ${PASSWORD_MIN_LENGTH} characters`).max(200);
-/** E.164, e.g. +66812345678 */
+/**
+ * E.164 shape, e.g. +66812345678. The API also checks it's a real mobile number with
+ * `mobilePhoneSchema` from '@hongwang/shared/phone' (a separate entry, so the phone metadata stays
+ * out of every page's bundle).
+ */
 export const phoneSchema = z.string().regex(/^\+[1-9]\d{7,14}$/, 'Use international format, e.g. +66812345678');
 
 export const registerInputSchema = z.object({

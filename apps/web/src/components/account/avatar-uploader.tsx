@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/surfaces';
 import { apiFetch, errorMessage } from '@/lib/api/client';
+import { uploadFile } from '@/lib/api/upload';
 import { useUpdateProfile } from '@/lib/auth/queries';
 
 const ACCEPT = avatarUploadInputSchema.shape.contentType.options;
@@ -15,6 +16,7 @@ const MAX_BYTES = 5 * 1024 * 1024;
 export function AvatarUploader({ user }: { user: MeDto }) {
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<'upload' | 'remove' | null>(null);
+  const [progress, setProgress] = useState(0);
   const update = useUpdateProfile();
   const name = `${user.firstName} ${user.lastName}`.trim();
 
@@ -22,13 +24,13 @@ export function AvatarUploader({ user }: { user: MeDto }) {
     if (!(ACCEPT as readonly string[]).includes(file.type)) return void toast.error('Use a JPG, PNG or WebP photo.');
     if (file.size > MAX_BYTES) return void toast.error('That photo is over 5 MB. Try a smaller one.');
     setBusy('upload');
+    setProgress(0);
     try {
       const target = await apiFetch<UploadTarget>('/users/me/avatar/upload-url', {
         method: 'POST',
         body: { contentType: file.type, size: file.size },
       });
-      const put = await fetch(target.uploadUrl, { method: target.method, headers: target.headers, body: file });
-      if (!put.ok) throw new Error('The upload didn’t go through. Please try again.');
+      await uploadFile(target, file, setProgress);
       await update.mutateAsync({ avatarUrl: target.publicUrl });
       toast.success('Photo updated');
     } catch (err) {
@@ -67,7 +69,7 @@ export function AvatarUploader({ user }: { user: MeDto }) {
         }}
       />
       <Button variant="outline" className="font-medium" loading={busy === 'upload'} disabled={!!busy} onClick={() => input.current?.click()}>
-        {user.avatarUrl ? 'Change photo' : 'Upload photo'}
+        {busy === 'upload' ? `Uploading ${progress}%` : user.avatarUrl ? 'Change photo' : 'Upload photo'}
       </Button>
       {user.avatarUrl && (
         <Button variant="ghost" loading={busy === 'remove'} disabled={!!busy} onClick={remove}>

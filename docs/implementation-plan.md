@@ -103,18 +103,19 @@ with the existing tests still green.
 
 | # | Area | Current custom code | Library to evaluate | What it would save | Initial lean | Decision |
 |---|---|---|---|---|---|---|
-| 1 | Auth and sessions | `apps/api/src/modules/auth/*`, `users/sessions.service.ts`, `common/auth.ts` (~650 lines: JWT, refresh rotation, cookies, Google OAuth, guard) | **Better Auth** with its Drizzle adapter (email/password, sessions with revocation, Google, phone-number plugin, rate limits) | Most auth code; also fixes the 15-minute revoked-session gap (M0) | Evaluate: biggest saving, biggest change (its own tables, NestJS integration, `MeDto` mapping) | |
-| 2 | Phone sign-in codes | `auth/otp.ts`, `auth/sms.service.ts` (log driver only) | **Twilio Verify** (codes, expiry, retries, fraud protection, real SMS), or Better Auth's phone plugin with an SMS sender | OTP storage and rate rules; gives real SMS (M6 item) | Replace when SMS goes live | |
-| 3 | Phone number parsing | regex in `packages/shared/src/schemas/auth.ts`, `apps/web/src/lib/auth/phone.ts` | **libphonenumber-js** | Correct validation and formatting per country; M1 contact masking needs it anyway | Replace | |
-| 4 | Email templates | `notifications/templates/layout.ts`, `parts.ts` and 13 templates (~600 lines incl. HTML escaping), dev preview controller | **React Email** (`@react-email/components` + `render`) | Hand-built table HTML and escaping; comes with a preview server; M1–M5 add about 10 more emails | Evaluate | |
-| 5 | Code input | `apps/web/src/components/auth/otp-input.tsx` (106 lines) | **input-otp** | Paste, SMS autofill, focus and accessibility handling | Replace | |
-| 6 | Stay date helpers | `packages/shared/src/dates.ts` (57 lines) | **date-fns** + **@date-fns/tz** (date-fns is already in the web app) | One date library everywhere | Evaluate (small and tested; keep if the swap adds churn) | |
-| 7 | Worker shutdown | `notifications/worker-lifecycle.ts` (64 lines) | `@nestjs/bullmq`'s own shutdown handling | Delete it if the module already closes workers gracefully on SIGTERM | Evaluate | |
-| 8 | Date-range click logic | `apps/web/src/components/search/range.ts` | **react-day-picker** `mode="range"` (already used for the calendar) | Duplicate selection logic | Evaluate | |
-| 9 | Booking refs | `bookings/booking-ref.ts` | **nanoid** `customAlphabet` | A few lines | Replace (trivial) | |
-| 10 | Web API client | `apps/web/src/lib/api/client.ts` (99 lines: fetch, refresh once, errors) | **ky** (hooks, retry), or **openapi-fetch** + **openapi-typescript** generated from the API's OpenAPI doc | Fetch boilerplate; generated types | Keep (the contract is already shared through zod) | |
-| 11 | PostGIS point reading | `database/schema/types.ts` (WKB + GeoJSON parsing) | **wkx**, or select `ST_AsGeoJSON` in queries | A small parser | Keep (small, tested against real PostGIS) | |
-| 12 | Local upload driver | `infra/storage` local HMAC upload controller | MinIO locally, so only the S3 driver remains | One code path less | Keep while there's no Docker locally | |
+| 1 | Auth and sessions | `apps/api/src/modules/auth/*`, `users/sessions.service.ts`, `common/auth.ts` (~650 lines: JWT, refresh rotation, cookies, Google OAuth, guard) | **Better Auth** with its Drizzle adapter (email/password, sessions with revocation, Google, phone-number plugin, rate limits) | Most auth code; also fixes the 15-minute revoked-session gap (M0) | Evaluate: biggest saving, biggest change (its own tables, NestJS integration, `MeDto` mapping) | **Keep**: it fits technically, but requires an email on every user (we're phone-first) and exposes routes we'd have to fence off; the revocation gap is a small guard change. Spike in 4.4 |
+| 2 | Phone sign-in codes | `auth/otp.ts`, `auth/sms.service.ts` (log driver only) | **Twilio Verify** (codes, expiry, retries, fraud protection, real SMS), or Better Auth's phone plugin with an SMS sender | OTP storage and rate rules; gives real SMS (M6 item) | Replace when SMS goes live | **Later**: decide with the M6 SMS provider. Our codes are already HMAC'd, rate-limited and have a resend cooldown; Verify adds real SMS and SMS-pumping protection behind `SmsService` |
+| 3 | Phone number parsing | regex in `packages/shared/src/schemas/auth.ts`, `apps/web/src/lib/auth/phone.ts` | **libphonenumber-js** | Correct validation and formatting per country; M1 contact masking needs it anyway | Replace | **Replaced** (2026-11-22): `@hongwang/shared/phone`, a separate entry so its ~130 KB metadata loads only on /login and /account. Mobile-only validation (landlines refused), local formats accepted, the API's phone DTOs check real mobiles |
+| 4 | Email templates | `notifications/templates/layout.ts`, `parts.ts` and 13 templates (~600 lines incl. HTML escaping), dev preview controller | **React Email** (`@react-email/components` + `render`) | Hand-built table HTML and escaping; comes with a preview server; M1–M5 add about 10 more emails | Evaluate | **Keep**: templates are already typed content blocks (16–50 lines, never HTML), with one escaping point, a plain-text version from the same source, a dev preview route and tests. React Email would add React and JSX to the API and a rewrite for no new capability. Revisit if emails outgrow the blocks (M5 invoices) |
+| 5 | Code input | `apps/web/src/components/auth/otp-input.tsx` (106 lines) | **input-otp** | Paste, SMS autofill, focus and accessibility handling | Replace | **Replaced** (2026-11-22): one labelled input drawn as six boxes; pasting the whole SMS keeps just the code |
+| 6 | Stay date helpers | `packages/shared/src/dates.ts` (57 lines) | **date-fns** + **@date-fns/tz** (date-fns is already in the web app) | One date library everywhere | Evaluate (small and tested; keep if the swap adds churn) | **Keep**: string and UTC arithmetic on `YYYY-MM-DD`, so no server-timezone bugs (date-fns works on local-time `Date`s and would add two packages to the shared bundle). Direct tests added; they pass under Bangkok and Los Angeles time. date-fns stays for display formatting in the web app |
+| 7 | Worker shutdown | `notifications/worker-lifecycle.ts` (64 lines) | `@nestjs/bullmq`'s own shutdown handling | Delete it if the module already closes workers gracefully on SIGTERM | Evaluate | **Keep**: `@nestjs/bullmq` closes workers in `onApplicationShutdown`, the same phase that closes the pg pool and SMTP, with no order between modules, so a running job could lose its connections. Ours drains a phase earlier with a 25 s cap |
+| 8 | Date-range click logic | `apps/web/src/components/search/range.ts` | **react-day-picker** `mode="range"` (already used for the calendar) | Duplicate selection logic | Evaluate | **Keep**: react-day-picker already draws it; only the 23-line click rule is ours. Range mode treats a day as selectable or disabled, but a booked night must stay clickable as a check-out day without letting anyone sleep over it |
+| 9 | Booking refs | `bookings/booking-ref.ts` | **nanoid** `customAlphabet` | A few lines | Replace (trivial) | **Keep**: 10 tested lines on `crypto.randomInt`; nanoid 6 is ESM-only, so it would need a Jest workaround to save four lines |
+| 10 | Web API client | `apps/web/src/lib/api/client.ts` (99 lines: fetch, refresh once, errors) | **ky** (hooks, retry), or **openapi-fetch** + **openapi-typescript** generated from the API's OpenAPI doc | Fetch boilerplate; generated types | Keep (the contract is already shared through zod) | **Replaced with axios** (2026-11-22, owner's call over a Keep recommendation): `apiFetch`/`serverFetch` keep their signatures. The 401 refresh-and-retry is an interceptor, `serverFetch` uses axios's `fetch` adapter so Next.js caching still applies, and storage uploads (`uploadFile`) now report progress. Costs about 60 KB of raw client JS |
+| 11 | PostGIS point reading | `database/schema/types.ts` (WKB + GeoJSON parsing) | **wkx**, or select `ST_AsGeoJSON` in queries | A small parser | Keep (small, tested against real PostGIS) | **Keep**: about 40 lines with tests, and it reads both shapes Postgres returns (WKB and relational-query GeoJSON) |
+| 12 | Local upload driver | `infra/storage` local HMAC upload controller | MinIO locally, so only the S3 driver remains | One code path less | Keep while there's no Docker locally | **Keep**: local development runs on Homebrew without Docker or MinIO; revisit when staging uses R2 |
+| 13 | Google OAuth exchange | `auth/google-oauth.service.ts` (authorize URL, code exchange, ID token) | **arctic** (MIT, OAuth 2.0 clients incl. Google and LINE, PKCE) | Hand-rolled token exchange; LINE Login later without a new client | Evaluate (added after the row 1 spike; likely ESM-only, see 4.4) | **Later**: adopt together with LINE Login, when a second provider makes a shared client pay off. Today it's one provider in about 40 lines, and arctic is ESM-only (Jest workaround). PKCE, which arctic would bring, goes into M0 now (5.2) |
 
 Already on libraries, no action: CASL, `@node-rs/argon2`, `ua-parser-js`, nestjs-zod, `@nestjs/throttler`,
 BullMQ, the Stripe and AWS SDKs, nodemailer, react-day-picker, dnd-kit, react-map-gl/MapLibre,
@@ -140,9 +141,51 @@ Start from these instead of writing custom code (each still goes through the 4.1
 | M6 | Data export zip | archiver |
 | Platform | Error tracking | `@sentry/nestjs`, `@sentry/nextjs` |
 
+### 4.4 Row 1 spike: Better Auth (2026-11-22) — decision: Keep
+
+Branch `spike/better-auth` (reference only, not for merge): `better-auth@1.7.27` on our own tables,
+a drop-in guard and 8 e2e tests against real Postgres, all green.
+
+**It fits technically.**
+- Runs in our CommonJS NestJS build on Node 22, because Node can `require()` ES modules. Jest
+  can't until Node 24.9; the branch's `apps/api/jest.esm.js` compiles those packages with swc.
+- No community Nest adapter is needed. Mounted on Express at `/api/auth/{*any}` ahead of Nest's
+  router, it leaves Nest's JSON body parser and the Stripe webhook's raw body alone.
+- It maps onto `users` and `sessions` (plus new `auth_accounts` and `auth_verifications` tables),
+  keeps uuid ids, and verifies our existing argon2 hashes.
+- It covers today's flows, including the phone sign-up name step and suspension checks, and
+  revokes sessions immediately.
+
+**Why we keep the custom code anyway (Hongwang's rules)**
+- **Phone-first accounts.** Better Auth requires an email on every user, so phone-only Thai users
+  would get placeholder addresses. Every reader of `users.email` would then have to know about
+  them: booking emails, Stripe customers, admin search (M3), contact reveal (M1) and data export.
+  Placeholders can also be squatted: signing up by email with someone's placeholder address
+  blocks that phone number from signing up.
+- **Route surface.** It serves about 30 core routes plus plugin routes. For example,
+  `/update-user` accepts `image` (our `avatar_url`), which would let any user set an arbitrary
+  avatar URL and skip our upload check. Each one has to be found and switched off
+  (`disabledPaths`), and checked again on every upgrade (releases come every few days).
+- **Our code is stricter where it matters.** We hash refresh tokens and phone codes (Better Auth
+  stores both in plain text), detect refresh-token reuse, enforce a 45-second resend cooldown (SMS
+  cost and pumping) and keep login timing equal.
+- **Copy and language.** The API returns the design's wording. Better Auth's English messages would
+  have to be mapped on the web before Thai (M6).
+- **The main gain is small without it.** The revocation gap closes with one session lookup in our
+  guard (M0, 5.2). CSRF needs an origin check, which is also small.
+
+**Revisit** if the roadmap adds several of LINE Login, passkeys, 2FA or a native app. Until then,
+use libraries for the risky parts only: arctic for OAuth (row 13), Twilio Verify for SMS codes
+(row 2), libphonenumber-js (row 3) and input-otp (row 5).
+
 **Done when:** every row in 4.2 has a decision, the "Replace" items are merged with tests, typecheck
 and builds green, and `CLAUDE.md` reflects any library that changes how modules are written (for
 example a new auth library or React Email).
+
+**Status (2026-11-22):** all 13 rows decided: 3 replaced (libphonenumber-js, input-otp, axios), 8 kept,
+2 later (Twilio Verify with the M6 SMS provider, arctic with LINE Login). Tests, typecheck and builds
+are green, and `CLAUDE.md` notes the separate `@hongwang/shared/phone` entry. P0 is done once branch
+`p0/session-revocation` is merged.
 
 ---
 
@@ -152,17 +195,18 @@ example a new auth library or React Email).
 with Stripe test mode.
 
 ### 5.1 Repository and tooling
-- [ ] Initial commit of the foundation; feature branches and PRs from here on.
+- [x] Initial commit of the foundation; feature branches and PRs from here on.
 - [ ] ESLint (flat config) for `apps/api`, `apps/web` and `packages/shared`, run by `pnpm lint`; fix or suppress the existing findings.
 - [ ] GitHub Actions CI: install, typecheck, lint, unit tests, DB e2e tests (service containers `postgis/postgis` and `redis`), and both production builds.
 - [ ] Local dev doc for Homebrew (Postgres + PostGIS on :5432, Redis) next to the Docker path in `README.md`.
 - [ ] Optional local mail catcher (Mailpit) so emails can be seen end to end.
 
 ### 5.2 Correctness and security
-- [ ] **Revoked sessions end immediately.** `JwtAuthGuard` currently trusts the access token for its full 15 minutes after sign-out-elsewhere, password change or account deletion. If P0 adopts Better Auth, this comes with it; otherwise keep a Redis set of revoked session ids (TTL = access token TTL), written by `SessionsService` and checked by the guard.
+- [x] **Revoked sessions end immediately.** `JwtAuthGuard` currently trusts the access token for its full 15 minutes after sign-out-elsewhere, password change or account deletion. P0 kept the custom auth (4.4), so the guard looks up the token's session on every request (`SessionsService.findActive`: one primary-key read joined to `users`). A revoked or expired session, or a suspended or deleted user, counts as signed out, and the role comes from the database. Chosen over a Redis revocation set: the database is already on every request's path, and there's no Redis-outage case to decide. Add a short Redis cache only if profiling asks for it.
 - [ ] **Idempotent booking creation.** `POST /bookings` commits before it reads the DTO; if the read fails, the guest sees an error while the dates are held. Accept an `Idempotency-Key` header on `POST /bookings` and `POST /payments/intent`, and have the reserve card retry safely.
 - [ ] **Security headers**: `helmet` on the API; CSP, `frame-ancestors`, `Referrer-Policy` and `Permissions-Policy` on the web app.
 - [ ] **CSRF review**: cookies are `SameSite=Lax` and mutations are JSON-only. Confirm the API rejects non-JSON `Content-Type` on mutations, or add a double-submit token.
+- [ ] **PKCE for Google sign-in** (found in P0 row 13): add an S256 `code_verifier` to the OAuth state cookie and send `code_challenge` / `code_verifier` in `GoogleOAuthService`, as RFC 9700 recommends even for server-side clients. Test with real Google test credentials.
 - [ ] **Rate limits behind the proxy**: confirm `X-Forwarded-For` reaches the API through the Next rewrite in staging so throttling is per visitor; add per-user limits on booking creation.
 - [ ] **Deleted accounts**: migrate the `users_email_or_phone` check to allow deleted users with neither email nor phone, and stop writing `deleted+<id>@hongwang.invalid`. Move the "pause listings on account deletion" write into `ListingsService`.
 - [ ] **Listing area**: moving the map pin currently overwrites a host-typed `area`; only auto-fill when the host hasn't set one.
@@ -372,7 +416,7 @@ Pick these up any time after M1; each is independent.
 
 | Issue | Impact | Fix | Milestone |
 |---|---|---|---|
-| Access token valid up to 15 min after its session is revoked | Signed-out devices keep working briefly | Redis revocation set checked by the guard | M0 |
+| Access token valid up to 15 min after its session is revoked | Signed-out devices keep working briefly | Guard checks the session row on every request (5.2) | M0 |
 | `POST /bookings` can commit then fail on the read | Guest sees an error while dates are held | Idempotency key + safe retry | M0 |
 | Deleted users keep a placeholder email | Constraint workaround | Relax the check constraint for deleted users | M0 |
 | No email for a payment refunded because it arrived late | Guest isn't told | New template | M0 |

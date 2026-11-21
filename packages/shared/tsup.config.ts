@@ -1,7 +1,8 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  // `phone` is its own entry ('@hongwang/shared/phone') so its metadata stays out of the root bundle.
+  entry: ['src/index.ts', 'src/phone.ts'],
   format: ['esm', 'cjs'],
   dts: true,
   sourcemap: true,

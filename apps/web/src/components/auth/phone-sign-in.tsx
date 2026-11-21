@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  phoneSchema,
   phoneVerifyInputSchema,
   PHONE_OTP,
   type AuthResponse,
@@ -30,7 +29,7 @@ const phoneFormSchema = z
       ctx.addIssue({ code: 'custom', path: ['national'], message: 'Enter your mobile number' });
       return;
     }
-    if (!phoneSchema.safeParse(toE164(v.country, v.national)).success) {
+    if (!toE164(v.country, v.national)) {
       const example = PHONE_COUNTRIES.find((c) => c.code === v.country)?.example;
       ctx.addIssue({ code: 'custom', path: ['national'], message: `Check the number${example ? `, e.g. ${example}` : ''}` });
     }
@@ -111,7 +110,9 @@ function PhoneStep({
 
   const onSubmit = handleSubmit(async (v) => {
     setFormError(null);
-    const res = await onSend(toE164(v.country, v.national));
+    const e164 = toE164(v.country, v.national);
+    if (!e164) return; // the schema already refused it
+    const res = await onSend(e164);
     if (res.ok) return;
     if (fieldErrors(res.error).phone) {
       setError('national', { type: 'server', message: fieldErrors(res.error).phone });

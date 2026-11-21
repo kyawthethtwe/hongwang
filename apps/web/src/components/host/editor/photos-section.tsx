@@ -21,6 +21,9 @@ import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
 import { SectionFooter, type SectionProps } from './shared';
 
+/** Keys the uploading tiles (two files can share a name). */
+let nextUploadId = 1;
+
 const ACCEPT = PHOTO_CONTENT_TYPES.join(',');
 
 function PhotoTile({
@@ -96,7 +99,8 @@ export function PhotosSection(props: SectionProps) {
   const caption = useUpdatePhotoCaption(listing.id);
   const reorder = useReorderPhotos(listing.id);
   const remove = useDeletePhoto(listing.id);
-  const [uploading, setUploading] = useState<string[]>([]);
+  /** Files on their way to storage, in the order they were added, with progress 0–100. */
+  const [uploading, setUploading] = useState<{ id: number; name: string; progress: number }[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const photos = [...listing.photos].sort((a, b) => a.position - b.position);
   const sensors = useSensors(
@@ -115,17 +119,18 @@ export function PhotosSection(props: SectionProps) {
         toast.error(`${f.name} is over 20 MB.`);
         continue;
       }
-      setUploading((u) => [...u, f.name]);
+      const id = nextUploadId++;
+      setUploading((u) => [...u, { id, name: f.name, progress: 0 }]);
       try {
-        await upload.mutateAsync(f);
+        await upload.mutateAsync({
+          file: f,
+          onProgress: (progress) => setUploading((u) => u.map((x) => (x.id === id ? { ...x, progress } : x))),
+        });
         props.onSaved(listing);
       } catch (err) {
-        toast.error(errorMessage(err, `Couldn’t upload ${f.name}.`));
+        toast.error(`${f.name}: ${errorMessage(err, 'Couldn’t upload it.')}`);
       } finally {
-        setUploading((u) => {
-          const i = u.indexOf(f.name);
-          return i < 0 ? u : [...u.slice(0, i), ...u.slice(i + 1)];
-        });
+        setUploading((u) => u.filter((x) => x.id !== id));
       }
     }
   }
@@ -207,13 +212,24 @@ export function PhotosSection(props: SectionProps) {
                 }
               />
             ))}
-            {uploading.map((name, i) => (
+            {uploading.map(({ id, name, progress }) => (
               <div
-                key={`${name}-${i}`}
-                className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-button bg-line-soft text-[13px] text-muted"
+                key={id}
+                className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-button bg-line-soft px-3 text-[13px] text-muted"
               >
                 <Spinner />
                 <span className="max-w-[90%] truncate">{name}</span>
+                <div
+                  role="progressbar"
+                  aria-label={`Uploading ${name}`}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={progress}
+                  className="h-1.5 w-full max-w-40 overflow-hidden rounded-full bg-line"
+                >
+                  <div className="h-full rounded-full bg-brand transition-[width]" style={{ width: `${progress}%` }} />
+                </div>
+                <span className="tabular-nums">{progress}%</span>
               </div>
             ))}
           </div>

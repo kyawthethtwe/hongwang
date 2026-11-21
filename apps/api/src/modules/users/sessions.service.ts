@@ -1,8 +1,9 @@
+import type { UserRole } from '@hongwang/shared';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { and, desc, eq, gt, isNull, ne } from 'drizzle-orm';
 import { ENV, type Env } from '../../config/env';
 import { InjectDb, type Database, type DbOrTx } from '../../database/database.module';
-import { sessions } from '../../database/schema';
+import { sessions, users } from '../../database/schema';
 import type { RequestMeta } from '../auth/request-meta';
 import {
   classifyRefreshFailure,
@@ -110,6 +111,30 @@ export class SessionsService {
       .update(sessions)
       .set({ revokedAt: new Date() })
       .where(and(eq(sessions.id, parsed.sessionId), eq(sessions.refreshTokenHash, sha256(parsed.token)), isNull(sessions.revokedAt)));
+  }
+
+  /**
+   * The access token's session, if it may still be used: not revoked or expired, and its user is
+   * neither suspended nor deleted. Returns the user's current role. Called by JwtAuthGuard on every
+   * signed-in request, so revoking a session takes effect on its next request.
+   */
+  async findActive(sessionId: string, userId: string): Promise<{ role: UserRole } | null> {
+    const [row] = await this.db
+      .select({ role: users.role })
+      .from(sessions)
+      .innerJoin(users, eq(users.id, sessions.userId))
+      .where(
+        and(
+          eq(sessions.id, sessionId),
+          eq(sessions.userId, userId),
+          isNull(sessions.revokedAt),
+          gt(sessions.expiresAt, new Date()),
+          isNull(users.suspendedAt),
+          isNull(users.deletedAt),
+        ),
+      )
+      .limit(1);
+    return row ? { role: row.role as UserRole } : null;
   }
 
   /** Active sessions, most recently used first. */
