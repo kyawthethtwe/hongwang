@@ -1,6 +1,7 @@
 import type { ApiErrorBody } from '@hongwang/shared';
+import axios, { type InternalAxiosRequestConfig, type Method } from 'axios';
 
-/** Thrown by apiFetch for every non-2xx response. `code` is the API's stable error code. */
+/** Thrown by apiFetch and serverFetch for every non-2xx response. `code` is the API's stable error code. */
 export class ApiError extends Error {
   constructor(
     public readonly status: number,
@@ -15,11 +16,16 @@ export class ApiError extends Error {
 
 type Query = Record<string, string | number | boolean | string[] | null | undefined>;
 
-export interface ApiFetchOptions extends Omit<RequestInit, 'body'> {
+export interface ApiFetchOptions {
+  method?: Method;
+  /** Sent as JSON. */
   body?: unknown;
   query?: Query;
+  headers?: Record<string, string>;
+  signal?: AbortSignal;
 }
 
+/** `?a=1&tags=x,y`: empty values dropped, arrays comma-joined (what the API's zod query schemas expect). */
 export function buildQuery(query?: Query): string {
   if (!query) return '';
   const params = new URLSearchParams();
@@ -31,54 +37,70 @@ export function buildQuery(query?: Query): string {
   return s ? `?${s}` : '';
 }
 
+const NETWORK_MESSAGE = 'We couldn’t reach Hongwang. Check your connection and try again.';
+
+/**
+ * Turns an axios failure into ApiError (status, the API's `code`, `message`, `details`). A request
+ * that never got a response becomes status 0 / NETWORK_ERROR. Cancellations pass through unchanged
+ * so TanStack Query recognises them.
+ */
+export function toApiError(err: unknown): unknown {
+  if (!axios.isAxiosError(err) || axios.isCancel(err)) return err;
+  if (!err.response) return new ApiError(0, 'NETWORK_ERROR', NETWORK_MESSAGE);
+  const { status, statusText, data } = err.response;
+  const body = (data && typeof data === 'object' ? data : {}) as Partial<ApiErrorBody>;
+  return new ApiError(status, body.code ?? `HTTP_${status}`, body.message ?? (statusText || `Request failed (${status})`), body.details);
+}
+
+/** Browser client: same origin through the Next.js /api rewrite, so the session cookies go along. */
+export const api = axios.create({
+  baseURL: '/api',
+  withCredentials: true,
+  headers: { Accept: 'application/json' },
+});
+
 let refreshing: Promise<boolean> | null = null;
 
 /** One refresh at a time per tab (shared by apiFetch and useSession). */
 export async function tryRefresh(): Promise<boolean> {
-  refreshing ??= fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' })
-    .then((r) => r.ok)
-    .catch(() => false)
+  refreshing ??= api
+    .post('/auth/refresh')
+    .then(
+      () => true,
+      () => false,
+    )
     .finally(() => {
       setTimeout(() => (refreshing = null), 0);
     });
   return refreshing;
 }
 
+type RetriableConfig = InternalAxiosRequestConfig & { _retried?: boolean };
+
+// On 401 (expired access token), refresh the session once and replay the request. Auth endpoints
+// are never replayed: their 401s mean "signed out" and useSession handles them.
+api.interceptors.response.use(undefined, async (err: unknown) => {
+  if (axios.isAxiosError(err) && err.response?.status === 401) {
+    const config = err.config as RetriableConfig | undefined;
+    if (config && !config._retried && !config.url?.startsWith('/auth/')) {
+      config._retried = true;
+      if (await tryRefresh()) return api.request(config);
+    }
+  }
+  throw toApiError(err);
+});
+
 /**
- * Browser-side call to the API through the Next.js /api rewrite (same origin, cookies included).
- * On 401 it refreshes the session once and retries.
+ * Browser-side call to the API. Throws ApiError on failure; on 401 it refreshes the session once
+ * and retries.
  *
  *   const listing = await apiFetch<ListingDetailDto>(`/listings/${id}`);
  *   await apiFetch('/bookings', { method: 'POST', body: input });
  */
-export async function apiFetch<T = void>(path: string, opts: ApiFetchOptions = {}, retried = false): Promise<T> {
-  const { body, query, headers, ...rest } = opts;
-  const res = await fetch(`/api${path}${buildQuery(query)}`, {
-    ...rest,
-    credentials: 'include',
-    headers: {
-      Accept: 'application/json',
-      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-      ...headers,
-    },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
-
-  if (res.status === 401 && !retried && !path.startsWith('/auth/')) {
-    if (await tryRefresh()) return apiFetch<T>(path, opts, true);
-  }
-  return parseResponse<T>(res);
-}
-
-export async function parseResponse<T>(res: Response): Promise<T> {
-  if (res.status === 204) return undefined as T;
-  const text = await res.text();
-  const data = text ? (JSON.parse(text) as unknown) : undefined;
-  if (!res.ok) {
-    const e = (data ?? {}) as Partial<ApiErrorBody>;
-    throw new ApiError(res.status, e.code ?? `HTTP_${res.status}`, e.message ?? res.statusText, e.details);
-  }
-  return data as T;
+export async function apiFetch<T = void>(path: string, opts: ApiFetchOptions = {}): Promise<T> {
+  const { method = 'GET', body, query, headers, signal } = opts;
+  const res = await api.request<T>({ url: `${path}${buildQuery(query)}`, method, data: body, headers, signal });
+  return (res.status === 204 ? undefined : res.data) as T;
 }
 
 /** Human message for toasts. */

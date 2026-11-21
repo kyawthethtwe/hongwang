@@ -22,6 +22,7 @@ import type {
 } from '@hongwang/shared';
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api/client';
+import { uploadFile } from '@/lib/api/upload';
 
 /**
  * Owner: Host Dashboard module. Query keys and hooks for the host pages. Listing CRUD and the
@@ -232,17 +233,16 @@ async function imageSize(file: File): Promise<{ width: number | null; height: nu
   }
 }
 
-/** upload-url -> PUT the file to storage -> attach. */
+/** upload-url -> PUT the file to storage (reporting progress 0–100) -> attach. */
 export function useUploadPhoto(listingId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async ({ file, onProgress }: { file: File; onProgress?: (percent: number) => void }) => {
       const target = await apiFetch<UploadTarget>(`/listings/${listingId}/photos/upload-url`, {
         method: 'POST',
         body: { contentType: file.type, size: file.size, fileName: file.name.slice(0, 200) },
       });
-      const put = await fetch(target.uploadUrl, { method: 'PUT', headers: target.headers, body: file });
-      if (!put.ok) throw new Error(`Upload of ${file.name} failed (${put.status})`);
+      await uploadFile(target, file, onProgress);
       const size = await imageSize(file);
       const body: AttachPhotoInput = { key: target.key, ...size };
       return apiFetch<ListingPhotoDto>(`/listings/${listingId}/photos`, { method: 'POST', body });
