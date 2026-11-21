@@ -33,7 +33,7 @@ export class GoogleOAuthService {
       state,
       prompt: 'select_account',
     });
-    return `${AUTHORIZE_URL}?${qs}`;
+    return `${AUTHORIZE_URL}?${qs.toString()}`;
   }
 
   /** Exchanges the code and reads the profile. Throws on any provider error. */

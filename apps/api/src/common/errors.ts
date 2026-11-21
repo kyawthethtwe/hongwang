@@ -8,7 +8,8 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 export class AppException extends HttpException {
   constructor(
     status: HttpStatus | number,
-    public readonly code: ErrorCode | string,
+    // `string & {}` keeps editor suggestions for ERROR_CODES while allowing other codes.
+    public readonly code: ErrorCode | (string & {}),
     message: string,
     public readonly details?: unknown,
   ) {
@@ -35,7 +36,7 @@ export const PG_ERRORS = {
 export function pgError(err: unknown): { code: string; constraint?: string; detail?: string } | null {
   let e: unknown = err;
   for (let i = 0; i < 4 && e; i++) {
-    if (typeof e === 'object' && e !== null && 'code' in e && typeof (e as { code: unknown }).code === 'string') {
+    if (typeof e === 'object' && e !== null && 'code' in e && typeof (e).code === 'string') {
       const c = (e as { code: string }).code;
       if (/^[0-9A-Z]{5}$/.test(c)) return e as { code: string; constraint?: string; detail?: string };
     }

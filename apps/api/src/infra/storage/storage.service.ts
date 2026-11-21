@@ -64,7 +64,7 @@ export class StorageService {
     const sig = this.sign(key, contentType, exp);
     const qs = new URLSearchParams({ key, ct: contentType, exp: String(exp), sig });
     return {
-      uploadUrl: `${this.env.API_PUBLIC_URL}/api/uploads/local?${qs}`,
+      uploadUrl: `${this.env.API_PUBLIC_URL}/api/uploads/local?${qs.toString()}`,
       method: 'PUT',
       headers: { 'Content-Type': contentType },
       key,

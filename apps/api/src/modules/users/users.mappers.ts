@@ -1,4 +1,4 @@
-import type { KycStatus, MeDto, SessionDto, UserRole } from '@hongwang/shared';
+import type { MeDto, SessionDto } from '@hongwang/shared';
 import { iso } from '../../common/mappers';
 import type { sessions, users } from '../../database/schema';
 import { describeDevice } from './device';
@@ -21,8 +21,8 @@ export function toMeDto(u: UserRow, opts: { isHost: boolean }): MeDto {
     phoneVerified: !!u.phone && !!u.phoneVerifiedAt,
     avatarUrl: u.avatarUrl,
     about: u.about,
-    role: u.role as UserRole,
-    kycStatus: u.kycStatus as KycStatus,
+    role: u.role,
+    kycStatus: u.kycStatus,
     isHost: opts.isHost,
     locale: u.locale,
     currency: u.currency,

@@ -17,7 +17,7 @@ export class NotificationsService {
   constructor(@InjectQueue(QUEUES.email) private readonly emailQueue: Queue<EmailJob>) {}
 
   async sendEmail<T extends EmailTemplate>(job: EmailJob<T>, opts: { delayMs?: number; jobId?: string } = {}): Promise<void> {
-    await this.emailQueue.add(job.template, job as EmailJob, { delay: opts.delayMs, jobId: opts.jobId });
+    await this.emailQueue.add(job.template, job, { delay: opts.delayMs, jobId: opts.jobId });
     this.logger.debug(`Queued ${job.template} to ${job.to}`);
   }
 }

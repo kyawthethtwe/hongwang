@@ -15,7 +15,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/database/migrate.ts",
     "db:seed": "tsx src/database/seed.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "lint": "eslint . --max-warnings=0"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1169.0",
@@ -70,6 +71,7 @@
     "transform": {
       "^.+\\.(t|j)s$": "@swc/jest"
     },
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "watchman": false
   }
 }

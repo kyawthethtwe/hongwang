@@ -30,6 +30,7 @@ pnpm infra:up                      # docker compose: postgis, redis, mailpit, mi
 pnpm db:migrate && pnpm db:seed    # seeded password is printed by the seed
 pnpm dev                           # web :3000, api :4000 (+ `pnpm --filter @hongwang/api dev:worker`)
 pnpm typecheck                     # all packages
+pnpm lint                          # ESLint, all packages (type-aware rules in eslint.base.mjs); CI runs it too
 pnpm --filter @hongwang/api test   # unit tests (jest + swc)
 pnpm --filter @hongwang/api test:e2e  # needs DATABASE_URL_TEST (Postgres with PostGIS)
 ```
