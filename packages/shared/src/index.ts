@@ -1,6 +1,8 @@
 export * from './enums';
 export * from './money';
 export * from './dates';
+// Phone parsing is the separate entry '@hongwang/shared/phone' (src/phone.ts): it carries
+// libphonenumber-js metadata that only a few pages need.
 export * from './booking-state';
 export * from './pricing';
 export * from './cancellation';

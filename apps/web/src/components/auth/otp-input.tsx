@@ -1,11 +1,13 @@
 'use client';
 
-import * as React from 'react';
+import { OTPInput, REGEXP_ONLY_DIGITS, type SlotProps } from 'input-otp';
+import { useId } from 'react';
 import { cn } from '@/lib/utils';
 
 /**
- * Six one-digit boxes for the phone code (design A4). Typing moves forward, Backspace moves back,
- * pasting or SMS autofill ("one-time-code") fills every box. `value` is the digits typed so far.
+ * The phone code boxes (design A4), built on input-otp. It is one real <input>, drawn as `length`
+ * boxes, so paste, SMS autofill (autocomplete="one-time-code"), password managers and screen
+ * readers all see a single labelled field. `value` is the digits typed so far.
  */
 export function OtpInput({
   value,
@@ -26,81 +28,50 @@ export function OtpInput({
   disabled?: boolean;
   legend?: string;
 }) {
-  const refs = React.useRef<(HTMLInputElement | null)[]>([]);
-  const digits = Array.from({ length }, (_, i) => value[i] ?? '');
-
-  const focus = (i: number) => {
-    const el = refs.current[Math.max(0, Math.min(length - 1, i))];
-    el?.focus();
-    el?.select();
-  };
-
-  /** Writes `incoming` digits starting at box `i` and moves focus after them. */
-  const fill = (i: number, incoming: string) => {
-    const clean = incoming.replace(/\D/g, '');
-    if (!clean) return;
-    const next = digits.slice();
-    for (let k = 0; k < clean.length && i + k < length; k++) next[i + k] = clean[k]!;
-    const joined = next.join('').slice(0, length);
-    onChange(joined);
-    focus(Math.min(joined.length, length - 1));
-  };
-
+  const id = useId();
   return (
-    <fieldset className="m-0 border-0 p-0" aria-describedby={describedBy}>
-      <legend className="mb-2 p-0 text-sm font-semibold">{legend}</legend>
-      <div className="grid grid-cols-6 gap-2">
-        {digits.map((d, i) => (
-          <input
-            key={i}
-            ref={(el) => {
-              refs.current[i] = el;
-            }}
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            autoComplete={i === 0 ? 'one-time-code' : 'off'}
-            aria-label={`Digit ${i + 1}`}
-            aria-invalid={invalid || undefined}
-            autoFocus={autoFocus && i === 0}
-            disabled={disabled}
-            value={d}
-            onFocus={(e) => e.currentTarget.select()}
-            onChange={(e) => {
-              const raw = e.currentTarget.value.replace(/\D/g, '');
-              if (!raw) {
-                onChange((digits.slice(0, i).join('') + digits.slice(i + 1).join('')).slice(0, length));
-                return;
-              }
-              // Typing over a filled box: keep only the new digit.
-              const incoming = d && raw.length === 2 ? (raw[0] === d ? raw[1]! : raw[0]!) : raw;
-              fill(i, incoming);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Backspace' && !d && i > 0) {
-                e.preventDefault();
-                onChange(digits.slice(0, i - 1).join(''));
-                focus(i - 1);
-              } else if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                focus(i - 1);
-              } else if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                focus(i + 1);
-              }
-            }}
-            onPaste={(e) => {
-              e.preventDefault();
-              fill(i, e.clipboardData.getData('text'));
-            }}
-            className={cn(
-              'min-h-14 w-full min-w-0 rounded-field border border-line-strong bg-surface text-center text-[22px] font-semibold text-ink transition-colors',
-              'focus:border-2 focus:border-brand focus:outline-none disabled:bg-canvas',
-              invalid && 'border-danger',
-            )}
-          />
-        ))}
-      </div>
-    </fieldset>
+    <div>
+      <label htmlFor={id} className="mb-2 block text-sm font-semibold">
+        {legend}
+      </label>
+      <OTPInput
+        id={id}
+        value={value}
+        onChange={onChange}
+        maxLength={length}
+        pattern={REGEXP_ONLY_DIGITS}
+        // Pasting "495 595" or the whole SMS ("Your Hongwang code is 495595…") keeps just the code.
+        pasteTransformer={(text) => text.replace(/\D/g, '').slice(0, length)}
+        inputMode="numeric"
+        autoFocus={autoFocus}
+        disabled={disabled}
+        aria-invalid={invalid || undefined}
+        aria-describedby={describedBy || undefined}
+        containerClassName="disabled:cursor-not-allowed"
+        render={({ slots }) => (
+          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${length}, minmax(0, 1fr))` }}>
+            {slots.map((slot, i) => (
+              <Slot key={i} {...slot} invalid={invalid} disabled={disabled} />
+            ))}
+          </div>
+        )}
+      />
+    </div>
+  );
+}
+
+function Slot({ char, isActive, hasFakeCaret, invalid, disabled }: SlotProps & { invalid?: boolean; disabled?: boolean }) {
+  return (
+    <div
+      aria-hidden
+      className={cn(
+        'relative flex min-h-14 min-w-0 items-center justify-center rounded-field border border-line-strong bg-surface text-[22px] font-semibold text-ink transition-colors',
+        isActive ? 'border-2 border-brand' : invalid && 'border-danger',
+        disabled && 'bg-canvas',
+      )}
+    >
+      {char}
+      {hasFakeCaret && <span className="pointer-events-none absolute h-6 w-px animate-pulse bg-ink motion-reduce:animate-none" />}
+    </div>
   );
 }

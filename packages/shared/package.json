@@ -11,9 +11,23 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./phone": {
+      "types": "./dist/phone.d.ts",
+      "import": "./dist/phone.js",
+      "require": "./dist/phone.cjs"
     }
   },
-  "files": ["dist"],
+  "typesVersions": {
+    "*": {
+      "phone": [
+        "./dist/phone.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "scripts": {
     "build": "tsup",
@@ -22,6 +36,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "libphonenumber-js": "^1.13.17",
     "zod": "^4.1.0"
   },
   "devDependencies": {
