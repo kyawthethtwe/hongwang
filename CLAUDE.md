@@ -12,7 +12,9 @@ What to build next, in order, with the definition of done for every module:
 - pnpm workspaces + Turborepo. Node 22. TypeScript 5.9 (pinned, don't upgrade to 7).
 - `packages/shared`: the API contract. Zod 4 request schemas, response DTO interfaces, enums,
   pricing, cancellation, booking state machine, queue payloads. Built with tsup; run
-  `pnpm --filter @hongwang/shared build` after changing it.
+  `pnpm --filter @hongwang/shared build` after changing it. The root entry ends up in every web
+  page, so heavy helpers get their own entry: `@hongwang/shared/phone` (libphonenumber-js) is the
+  example (tsup `entry`, `exports` and `typesVersions` in its package.json).
 - `apps/api`: NestJS 11 (pinned to 11: nestjs-zod needs it), Drizzle ORM + node-postgres,
   PostgreSQL with PostGIS + btree_gist, BullMQ 5 on Redis, CASL, Stripe, nestjs-zod, nestjs-pino.
 - `apps/web`: Next.js 16 App Router (Turbopack; `src/proxy.ts` replaces middleware; `params` and
@@ -63,6 +65,9 @@ pnpm --filter @hongwang/api test:e2e  # needs DATABASE_URL_TEST (Postgres with P
 ### Web
 - Talk to the API with `apiFetch` (client, `src/lib/api/client.ts`) or `serverFetch`
   (server components, `src/lib/api/server.ts`). Paths are relative to `/api`, e.g. `apiFetch('/bookings')`.
+  Both run on axios and throw `ApiError`; `serverFetch` goes through axios's `fetch` adapter, so pass
+  Next.js caching as its `revalidate` option. PUT files to storage with `uploadFile`
+  (`src/lib/api/upload.ts`), which reports progress. Don't call `fetch` or `axios` directly.
 - Data fetching with TanStack Query; keep query keys in the module's `queries.ts`
   (e.g. `src/lib/queries/bookings.ts`).
 - Use the design tokens in `src/app/globals.css` (`bg-brand`, `text-ink`, `text-muted`, `border-line`,
