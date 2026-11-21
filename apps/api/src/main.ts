@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import { Logger } from 'nestjs-pino';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { AppModule } from './app.module';
+import { securityHeaders } from './common/security-headers';
 import { ENV, type Env } from './config/env';
 import { LOCAL_UPLOAD_DIR } from './infra/storage/storage.service';
 
@@ -17,6 +18,8 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
   app.set('trust proxy', 1);
   app.setGlobalPrefix('api');
+  // First, so every response carries them (static /uploads files and errors included).
+  app.use(securityHeaders(env));
   app.use(cookieParser());
   app.enableCors({ origin: env.WEB_ORIGIN, credentials: true });
   app.useStaticAssets(LOCAL_UPLOAD_DIR, { prefix: '/uploads/', maxAge: '7d' });

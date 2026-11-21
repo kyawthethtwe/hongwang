@@ -1,6 +1,14 @@
 import type { NextConfig } from 'next';
+import { securityHeaders } from './src/lib/security-headers';
 
 const API_URL = process.env.API_INTERNAL_URL ?? 'http://localhost:4000';
+
+const headers = securityHeaders({
+  dev: process.env.NODE_ENV !== 'production',
+  mapStyleUrl: process.env.NEXT_PUBLIC_MAP_STYLE_URL || 'https://tiles.openfreemap.org/styles/positron',
+  // Local API uploads and MinIO by default; set the R2 endpoint and public bucket URL in production.
+  storageOrigins: (process.env.STORAGE_ORIGINS ?? 'http://localhost:4000 http://localhost:9000').split(/\s+/).filter(Boolean),
+});
 
 const nextConfig: NextConfig = {
   transpilePackages: ['@hongwang/shared'],
@@ -8,6 +16,10 @@ const nextConfig: NextConfig = {
   // httpOnly session cookies are first-party.
   async rewrites() {
     return [{ source: '/api/:path*', destination: `${API_URL}/api/:path*` }];
+  },
+  // Every page except /api/*, whose responses carry the API's own headers (apps/api, helmet).
+  async headers() {
+    return [{ source: '/((?!api/).*)', headers }];
   },
   images: {
     remotePatterns: [
