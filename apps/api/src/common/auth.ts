@@ -12,6 +12,7 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
 import { ENV, type Env } from '../config/env';
+import { SessionsService } from '../modules/users/sessions.service';
 
 /** The caller, attached to the request by JwtAuthGuard. */
 export interface AuthUser {
@@ -38,12 +39,18 @@ export const CurrentUser = createParamDecorator((_data: unknown, ctx: ExecutionC
 /**
  * Global guard (registered in app.module.ts). Every route needs a valid access-token cookie
  * unless marked @Public() or @OptionalAuth(). Tokens are issued by the Auth module.
+ *
+ * A valid signature isn't enough: the token's session must still be active
+ * (SessionsService.findActive), so signing out elsewhere, a password change, account deletion or
+ * suspension ends the session on its next request instead of when the 15-minute token expires.
+ * The role comes from the database too, so a role change applies at once.
  */
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly jwt: JwtService,
+    private readonly sessions: SessionsService,
     @Inject(ENV) private readonly env: Env,
   ) {}
 
@@ -56,16 +63,26 @@ export class JwtAuthGuard implements CanActivate {
 
     const token = extractAccessToken(req);
     if (token) {
-      try {
-        const payload = await this.jwt.verifyAsync<JwtPayload>(token, { secret: this.env.JWT_ACCESS_SECRET });
-        req.user = { id: payload.sub, role: payload.role, sessionId: payload.sid };
-      } catch {
-        if (!isPublic && !isOptional) throw new UnauthorizedException('Your session has expired');
+      const payload = await this.verify(token);
+      const active = payload ? await this.sessions.findActive(payload.sid, payload.sub) : null;
+      if (payload && active) req.user = { id: payload.sub, role: active.role, sessionId: payload.sid };
+      else if (!isPublic && !isOptional) {
+        // The web client refreshes on this 401; for a revoked session that fails too and signs out.
+        throw new UnauthorizedException(payload ? 'Your session has ended. Please sign in again.' : 'Your session has expired');
       }
     }
     if (isPublic || isOptional) return true;
     if (!req.user) throw new UnauthorizedException('Please sign in');
     return true;
+  }
+
+  /** The token's payload, or null when it's expired, tampered with or malformed. */
+  private async verify(token: string): Promise<JwtPayload | null> {
+    try {
+      return await this.jwt.verifyAsync<JwtPayload>(token, { secret: this.env.JWT_ACCESS_SECRET });
+    } catch {
+      return null;
+    }
   }
 }
 
