@@ -36,6 +36,13 @@ pnpm --filter @hongwang/api test:e2e  # needs DATABASE_URL_TEST (Postgres with P
 
 ## Conventions
 
+### Branches
+- `dev` is where development happens. Each piece of work gets a short-lived branch off `dev`
+  (e.g. `feat/inbox`, `fix/listing-area`, `docs/...`, `chore/...`) that merges back into `dev`;
+  don't commit to `dev` directly.
+- `main` is production. It only changes by merging `dev` into it; never commit to `main` directly.
+- Staging deploys from `dev`, production from `main` (implementation plan, M0 5.6).
+
 ### Contract first
 - Every endpoint's request schema and response type lives in `packages/shared/src/schemas/*.ts`,
   with the route list in that file's header comment. Web and API both import from `@hongwang/shared`.
