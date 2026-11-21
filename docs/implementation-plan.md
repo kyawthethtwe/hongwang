@@ -196,8 +196,9 @@ with Stripe test mode.
 
 ### 5.1 Repository and tooling
 - [x] Initial commit of the foundation; feature branches and PRs from here on.
-- [ ] ESLint (flat config) for `apps/api`, `apps/web` and `packages/shared`, run by `pnpm lint`; fix or suppress the existing findings.
-- [ ] GitHub Actions CI: install, typecheck, lint, unit tests, DB e2e tests (service containers `postgis/postgis` and `redis`), and both production builds.
+- [x] Branches (2026-11-22): work goes on short-lived branches off `dev` and merges back into `dev`; `main` is production and only takes merges from `dev` (`CLAUDE.md`, "Branches").
+- [x] ESLint (flat config) for `apps/api`, `apps/web` and `packages/shared`, run by `pnpm lint`; fix or suppress the existing findings. Done 2026-11-22: ESLint 9 (eslint-config-next's plugins don't support 10 yet) with typescript-eslint's type-aware rules, shared in `eslint.base.mjs`, plus Next's presets for the web. All 104 findings fixed, or settled with a commented rule choice; `--max-warnings=0`.
+- [ ] GitHub Actions CI on pushes and pull requests to `dev` and `main`: install, typecheck, lint, unit tests, DB e2e tests (service containers `postgis/postgis` and `redis`), and both production builds. Workflow added in `.github/workflows/ci.yml` and every step run from a clean copy; tick after its first green run on GitHub. No Redis service until a test needs one (today's tests mock the queues). In CI the DB tests fail instead of skipping when the database is missing.
 - [ ] Local dev doc for Homebrew (Postgres + PostGIS on :5432, Redis) next to the Docker path in `README.md`.
 - [ ] Optional local mail catcher (Mailpit) so emails can be seen end to end.
 
@@ -228,7 +229,7 @@ with Stripe test mode.
 - [ ] Add a few listings outside Ari so search across Bangkok places looks populated.
 
 ### 5.6 Staging deployment
-- [ ] Environments: `staging` now, `production` at launch. Separate Stripe test/live keys, buckets and databases.
+- [ ] Environments: `staging` now (deployed from `dev`), `production` at launch (deployed from `main`). Separate Stripe test/live keys, buckets and databases.
 - [ ] Deploy web, API and worker (see section 12), run `pnpm db:migrate` as a release step, never on boot.
 - [ ] Stripe webhook endpoint, R2 bucket with a public CDN domain, transactional email provider (SMTP), secrets in the host's secret store.
 - [ ] Smoke test on staging: the four Playwright golden paths.

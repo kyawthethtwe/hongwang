@@ -25,6 +25,7 @@ async function bootstrap() {
 }
 
 bootstrap().catch((err: unknown) => {
+  // eslint-disable-next-line no-console -- the app (and its logger) failed to start
   console.error('Worker failed to start', err);
   process.exit(1);
 });

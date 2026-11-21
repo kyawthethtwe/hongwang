@@ -18,8 +18,10 @@ if (require.main === module) {
   const url = process.argv[2] ?? process.env.DATABASE_URL;
   if (!url) throw new Error('DATABASE_URL is not set');
   runMigrations(url)
+    // eslint-disable-next-line no-console -- CLI script
     .then(() => console.log('Migrations applied'))
     .catch((err) => {
+      // eslint-disable-next-line no-console -- CLI script
       console.error(err);
       process.exit(1);
     });

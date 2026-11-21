@@ -1,0 +1,74 @@
+# CI for every push and pull request to dev (development) and main (production).
+# Two parallel jobs: the workspace checks, and the database tests against Postgres + PostGIS.
+name: CI
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+
+# A newer push to the same branch or PR cancels the run in progress.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  TURBO_TELEMETRY_DISABLED: 1
+
+jobs:
+  checks:
+    name: Typecheck, lint, unit tests, builds
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      # Installs the pnpm version from package.json's packageManager field.
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Turborepo builds @hongwang/shared first wherever a task depends on it.
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
+
+  db-tests:
+    name: Database tests (Postgres + PostGIS)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        # Same image as docker-compose.yml. The test setup runs every migration (PostGIS,
+        # btree_gist and citext included); without a database it fails because CI is set.
+        image: postgis/postgis:17-3.5
+        env:
+          POSTGRES_USER: hongwang
+          POSTGRES_PASSWORD: hongwang
+          POSTGRES_DB: hongwang_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hongwang -d hongwang_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL_TEST: postgres://hongwang:hongwang@localhost:5432/hongwang_test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @hongwang/shared build
+      - run: pnpm --filter @hongwang/api test:e2e

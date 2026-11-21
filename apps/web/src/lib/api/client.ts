@@ -45,10 +45,11 @@ const NETWORK_MESSAGE = 'We couldn’t reach Hongwang. Check your connection and
  * so TanStack Query recognises them.
  */
 export function toApiError(err: unknown): unknown {
-  if (!axios.isAxiosError(err) || axios.isCancel(err)) return err;
+  if (!axios.isAxiosError<Partial<ApiErrorBody> | undefined>(err) || axios.isCancel(err)) return err;
   if (!err.response) return new ApiError(0, 'NETWORK_ERROR', NETWORK_MESSAGE);
   const { status, statusText, data } = err.response;
-  const body = (data && typeof data === 'object' ? data : {}) as Partial<ApiErrorBody>;
+  // A proxy error page can arrive as text/html, so check it's really the API's JSON body.
+  const body: Partial<ApiErrorBody> = data && typeof data === 'object' ? data : {};
   return new ApiError(status, body.code ?? `HTTP_${status}`, body.message ?? (statusText || `Request failed (${status})`), body.details);
 }
 

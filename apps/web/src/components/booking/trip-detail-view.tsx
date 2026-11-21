@@ -326,7 +326,7 @@ function Receipt({ booking: b }: { booking: BookingDto }) {
           extra={b.refundAmount ? <PriceRow label="Refunded" value={formatTHB(-b.refundAmount)} /> : undefined}
         />
         <p className="m-0 text-sm text-muted">
-          {paid ? `${paidWith(p)} · ${formatMoment(p!.paidAt!)}` : 'Not charged yet. Price locked when you reserved.'}
+          {paid ? `${paidWith(p)} · ${formatMoment(p.paidAt!)}` : 'Not charged yet. Price locked when you reserved.'}
         </p>
         <Button variant="outline" className="font-medium" disabled title="Coming soon">
           Download receipt (PDF)

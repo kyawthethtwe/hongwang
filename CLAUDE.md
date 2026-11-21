@@ -30,11 +30,19 @@ pnpm infra:up                      # docker compose: postgis, redis, mailpit, mi
 pnpm db:migrate && pnpm db:seed    # seeded password is printed by the seed
 pnpm dev                           # web :3000, api :4000 (+ `pnpm --filter @hongwang/api dev:worker`)
 pnpm typecheck                     # all packages
+pnpm lint                          # ESLint, all packages (type-aware rules in eslint.base.mjs); CI runs it too
 pnpm --filter @hongwang/api test   # unit tests (jest + swc)
 pnpm --filter @hongwang/api test:e2e  # needs DATABASE_URL_TEST (Postgres with PostGIS)
 ```
 
 ## Conventions
+
+### Branches
+- `dev` is where development happens. Each piece of work gets a short-lived branch off `dev`
+  (e.g. `feat/inbox`, `fix/listing-area`, `docs/...`, `chore/...`) that merges back into `dev`;
+  don't commit to `dev` directly.
+- `main` is production. It only changes by merging `dev` into it; never commit to `main` directly.
+- Staging deploys from `dev`, production from `main` (implementation plan, M0 5.6).
 
 ### Contract first
 - Every endpoint's request schema and response type lives in `packages/shared/src/schemas/*.ts`,

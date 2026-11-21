@@ -26,7 +26,7 @@ const HTML_ESCAPES: Record<string, string> = {
 };
 
 /** Escapes text for HTML element content and double- or single-quoted attributes. */
-export function escapeHtml(value: unknown): string {
+export function escapeHtml(value: string | number | null | undefined): string {
   return String(value ?? '').replace(/[&<>"'`]/g, (c) => HTML_ESCAPES[c] ?? c);
 }
 

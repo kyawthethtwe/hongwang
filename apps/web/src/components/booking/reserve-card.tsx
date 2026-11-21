@@ -141,8 +141,8 @@ function useReserveForm(listing: ListingDetailDto, initial: Range, initialGuests
 
   const quoteMatches =
     !!quote.data && !!quoteInput && !!stay && quoteInput.checkIn === stay.checkIn && quoteInput.checkOut === stay.checkOut && quoteInput.guests === guests;
-  const reasons: QuoteReason[] = quoteMatches ? quote.data!.reasons : [];
-  const bookable = quoteMatches && quote.data!.available;
+  const reasons: QuoteReason[] = quoteMatches ? quote.data.reasons : [];
+  const bookable = quoteMatches && quote.data.available;
 
   const currentUrl = () => {
     const qs = new URLSearchParams();

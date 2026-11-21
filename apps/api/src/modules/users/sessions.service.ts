@@ -134,7 +134,7 @@ export class SessionsService {
         ),
       )
       .limit(1);
-    return row ? { role: row.role as UserRole } : null;
+    return row ? { role: row.role } : null;
   }
 
   /** Active sessions, most recently used first. */

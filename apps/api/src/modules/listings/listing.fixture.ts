@@ -95,5 +95,5 @@ export function userRow(over: Partial<UserRow> = {}): UserRow {
     createdAt: created,
     updatedAt: created,
     ...over,
-  } as UserRow;
+  };
 }

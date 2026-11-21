@@ -11,8 +11,8 @@ export class TokenService {
     @Inject(ENV) private readonly env: Env,
   ) {}
 
-  signAccess(user: { id: string; role: UserRole | string }, sessionId: string): Promise<string> {
-    const payload: JwtPayload = { sub: user.id, role: user.role as UserRole, sid: sessionId };
+  signAccess(user: { id: string; role: UserRole }, sessionId: string): Promise<string> {
+    const payload: JwtPayload = { sub: user.id, role: user.role, sid: sessionId };
     return this.jwt.signAsync(payload, { secret: this.env.JWT_ACCESS_SECRET, expiresIn: this.env.ACCESS_TOKEN_TTL_SEC });
   }
 }

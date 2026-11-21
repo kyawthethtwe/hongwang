@@ -11,7 +11,7 @@ const DAY_MS = 86_400_000;
 
 function parse(d: IsoDate): number {
   const [y, m, day] = d.split('-').map(Number);
-  return Date.UTC(y!, m! - 1, day!);
+  return Date.UTC(y!, m! - 1, day);
 }
 
 function format(ms: number): IsoDate {

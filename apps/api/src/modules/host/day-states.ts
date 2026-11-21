@@ -63,7 +63,7 @@ export function dateRange(from: IsoDate, count: number): IsoDate[] {
 /** Every date of a 'YYYY-MM' month. */
 export function monthDates(month: string): IsoDate[] {
   const [y, m] = month.split('-').map(Number);
-  const days = new Date(Date.UTC(y!, m!, 0)).getUTCDate();
+  const days = new Date(Date.UTC(y!, m, 0)).getUTCDate();
   return dateRange(`${month}-01`, days);
 }
 

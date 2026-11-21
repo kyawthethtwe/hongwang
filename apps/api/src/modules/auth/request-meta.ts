@@ -27,6 +27,7 @@ export const ReqMeta = createParamDecorator((_data: unknown, ctx: ExecutionConte
 export function safeNextPath(raw: unknown, fallback = '/'): string {
   if (typeof raw !== 'string' || raw.length > 512) return fallback;
   if (!raw.startsWith('/') || raw.startsWith('//') || raw.startsWith('/\\')) return fallback;
+  // eslint-disable-next-line no-control-regex -- refusing control characters is the point
   if (/[\u0000-\u001f\\]/.test(raw)) return fallback;
   return raw;
 }

@@ -60,7 +60,7 @@ export function createMockDb(results: unknown[] = []): MockDb {
           record(ops);
           const next = queue.length ? queue.shift() : [];
           const p =
-            next && typeof next === 'object' && THROW in (next as object)
+            next && typeof next === 'object' && THROW in (next)
               ? Promise.reject((next as Record<typeof THROW, unknown>)[THROW])
               : Promise.resolve(next);
           return p.then.bind(p);

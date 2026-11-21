@@ -11,6 +11,8 @@ module.exports = {
   testRegex: '.e2e-spec.ts$',
   transform: { '^.+\\.(t|j)s$': '@swc/jest' },
   testEnvironment: 'node',
+  // Crawl files directly: a broken watchman install made Jest exit 0 without running any tests.
+  watchman: false,
   globalSetup: '<rootDir>/test/setup/global-setup.ts',
   testTimeout: 120_000,
 };

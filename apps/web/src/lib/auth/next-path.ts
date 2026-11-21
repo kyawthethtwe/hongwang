@@ -6,6 +6,7 @@ export function safeNextPath(raw: string | string[] | null | undefined): string 
   const v = Array.isArray(raw) ? raw[0] : raw;
   if (typeof v !== 'string' || v.length === 0 || v.length > 512) return null;
   if (!v.startsWith('/') || v.startsWith('//') || v.startsWith('/\\')) return null;
+  // eslint-disable-next-line no-control-regex -- refusing control characters is the point
   if (/[\u0000-\u001f\\]/.test(v)) return null;
   // Never bounce back into the auth pages themselves.
   if (/^\/(login|reset-password|verify-email)(\/|\?|$)/.test(v)) return null;
