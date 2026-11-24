@@ -20,8 +20,9 @@ const EXT: Record<string, string> = {
 /**
  * Object storage (whiteboard: "R2 or Cloudinary", photos via presigned upload).
  * The browser PUTs the file straight to `uploadUrl`, then tells the API the `key`.
- * - STORAGE_DRIVER=s3: S3-compatible presigned PUT (Cloudflare R2, MinIO, AWS).
- * - STORAGE_DRIVER=local: HMAC-signed PUT to this API (UploadsController), served from /uploads.
+ * - STORAGE_DRIVER=s3 (staging, production): S3-compatible presigned PUT (Cloudflare R2, or AWS S3).
+ * - STORAGE_DRIVER=local (development): HMAC-signed PUT to this API (UploadsController), served from /uploads.
+ * `loadEnv` refuses `local` in production and requires every S3_* setting with `s3`.
  */
 @Injectable()
 export class StorageService {
