@@ -3,6 +3,8 @@ import { z } from 'zod';
 const bool = z.preprocess((v) => (v === 'true' || v === '1' ? true : v === 'false' || v === '0' || v === '' ? false : v), z.boolean());
 const optional = z.preprocess((v) => (v === '' ? undefined : v), z.string().optional());
 
+const S3_SETTINGS = ['S3_ENDPOINT', 'S3_BUCKET', 'S3_ACCESS_KEY_ID', 'S3_SECRET_ACCESS_KEY', 'S3_PUBLIC_URL'] as const;
+
 export const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().default(4000),
@@ -41,6 +43,17 @@ export const envSchema = z.object({
 
   SMS_DRIVER: z.enum(['log']).default('log'),
   AUTO_APPROVE_LISTINGS: bool.default(true),
+}).superRefine((env, ctx) => {
+  // Development keeps uploads on local disk; staging and production use S3 (Cloudflare R2). A server's
+  // disk is wiped on redeploy and isn't shared between instances, so production refuses `local`.
+  if (env.NODE_ENV === 'production' && env.STORAGE_DRIVER !== 's3') {
+    ctx.addIssue({ code: 'custom', path: ['STORAGE_DRIVER'], message: "must be 's3' in production (local disk uploads are lost on redeploy)" });
+  }
+  if (env.STORAGE_DRIVER === 's3') {
+    for (const key of S3_SETTINGS) {
+      if (!env[key]) ctx.addIssue({ code: 'custom', path: [key], message: 'required when STORAGE_DRIVER=s3' });
+    }
+  }
 });
 
 export type Env = z.infer<typeof envSchema>;

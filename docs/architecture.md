@@ -12,7 +12,7 @@ and the UI design canvas (https://claude.ai/code/artifact/6e7f1a95-c9c0-4241-93c
         │                                     │            │
         │ photos, presigned PUT               │            └──▶ Stripe (test mode): PaymentIntents, webhooks, Connect payouts
         ▼                                     ▼
- Object storage (R2 / MinIO / local)      Redis (cache + BullMQ) ──▶ Workers (apps/api, src/worker.ts)
+ Object storage (R2; local disk in dev)   Redis (cache + BullMQ) ──▶ Workers (apps/api, src/worker.ts)
                                                                      holds, request timeouts, emails, payouts
 ```
 
@@ -24,6 +24,9 @@ and the UI design canvas (https://claude.ai/code/artifact/6e7f1a95-c9c0-4241-93c
 - **Workers**: the same codebase, separate entrypoint (`src/worker.ts` + `WorkerModule`), consuming
   BullMQ queues. HTTP code only produces jobs.
 - **PostgreSQL**: PostGIS for map search, an exclusion constraint for availability, Drizzle ORM.
+- **Object storage**: the browser PUTs photos straight to storage with a signed URL. Staging and
+  production use Cloudflare R2 (`STORAGE_DRIVER=s3`); development keeps them on the API's own disk
+  (`STORAGE_DRIVER=local`), and the API refuses `local` in production.
 - **Stripe** in test mode. Without keys, a simulated payment path runs the same confirmation code.
 
 ## Booking lifecycle

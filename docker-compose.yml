@@ -1,7 +1,11 @@
 # Local infrastructure for development. `pnpm infra:up`
+# No object storage: in development the API keeps uploads on local disk (STORAGE_DRIVER=local);
+# staging and production use S3 (Cloudflare R2).
 services:
   postgres:
     image: postgis/postgis:17-3.5
+    # postgis/postgis is published for amd64 only; on Apple Silicon Docker runs it under emulation.
+    platform: linux/amd64
     environment:
       POSTGRES_USER: hongwang
       POSTGRES_PASSWORD: hongwang
@@ -22,18 +26,5 @@ services:
       - '1025:1025' # SMTP
       - '8025:8025' # Web UI
 
-  minio:
-    image: minio/minio:latest
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: hongwang
-      MINIO_ROOT_PASSWORD: hongwang-secret
-    ports:
-      - '9000:9000'
-      - '9001:9001'
-    volumes:
-      - miniodata:/data
-
 volumes:
   pgdata:
-  miniodata:

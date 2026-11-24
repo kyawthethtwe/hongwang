@@ -15,7 +15,7 @@ export interface SecurityHeaderOptions {
   dev: boolean;
   /** NEXT_PUBLIC_MAP_STYLE_URL; its origin serves the style, tiles, glyphs and sprites. */
   mapStyleUrl: string;
-  /** Where photos are read from and uploads are PUT to (local API, MinIO, R2 endpoint and public bucket). */
+  /** Where photos are read from and uploads are PUT to (the local API in development; the R2 endpoint and public bucket in production). */
   storageOrigins: string[];
 }
 

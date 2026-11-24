@@ -18,17 +18,22 @@ and Redis installed locally ([Homebrew steps below](#without-docker-homebrew-on-
 pnpm install
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
-pnpm infra:up          # Postgres+PostGIS :5433, Redis :6379, Mailpit :8025, MinIO :9000
+pnpm infra:up          # Postgres+PostGIS :5433, Redis :6379, Mailpit :8025 (emails)
 pnpm db:migrate
 pnpm db:seed           # prints the demo accounts and their password
 pnpm dev               # web http://localhost:3000, API http://localhost:4000/api (docs at /api/docs)
 pnpm --filter @hongwang/api dev:worker   # BullMQ workers: holds, timeouts, emails
 ```
 
+Uploaded photos stay on local disk in development (`STORAGE_DRIVER=local`, files in
+`apps/api/uploads`); staging and production use S3 (Cloudflare R2), set up as in the storage block of
+`apps/api/.env.example`. On Apple Silicon, Docker runs the PostGIS image under emulation, since it's
+published for amd64 only.
+
 ### Without Docker: Homebrew on macOS
 
 Postgres 18 with PostGIS and Redis run as Homebrew services on their usual ports (Postgres on
-:5432, not Docker's :5433, so both setups can coexist). Uploads use the local driver, so no MinIO.
+:5432, not Docker's :5433, so both setups can coexist). Uploads use local disk here too.
 
 ```bash
 brew install postgresql@18 postgis redis

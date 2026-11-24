@@ -6,8 +6,8 @@ const API_URL = process.env.API_INTERNAL_URL ?? 'http://localhost:4000';
 const headers = securityHeaders({
   dev: process.env.NODE_ENV !== 'production',
   mapStyleUrl: process.env.NEXT_PUBLIC_MAP_STYLE_URL || 'https://tiles.openfreemap.org/styles/positron',
-  // Local API uploads and MinIO by default; set the R2 endpoint and public bucket URL in production.
-  storageOrigins: (process.env.STORAGE_ORIGINS ?? 'http://localhost:4000 http://localhost:9000').split(/\s+/).filter(Boolean),
+  // The API's local uploads by default; set the R2 endpoint and public bucket URL in staging and production.
+  storageOrigins: (process.env.STORAGE_ORIGINS ?? 'http://localhost:4000').split(/\s+/).filter(Boolean),
 });
 
 const nextConfig: NextConfig = {

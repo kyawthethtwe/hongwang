@@ -26,7 +26,7 @@ What to build next, in order, with the definition of done for every module:
 
 ```bash
 pnpm install
-pnpm infra:up                      # docker compose: postgis, redis, mailpit, minio
+pnpm infra:up                      # docker compose: postgis, redis, mailpit
 pnpm db:migrate && pnpm db:seed    # seeded password is printed by the seed
 pnpm dev                           # web :3000, api :4000 (+ `pnpm --filter @hongwang/api dev:worker`)
 pnpm typecheck                     # all packages
@@ -64,6 +64,8 @@ pnpm --filter @hongwang/api test:e2e  # needs DATABASE_URL_TEST (Postgres with P
   automatically.
 - Env: `@Inject(ENV) private readonly env: Env` (`src/config/env.ts`). Add new vars to the schema and
   to `.env.example`.
+- Photo storage: `STORAGE_DRIVER=local` (disk) in development, `s3` (Cloudflare R2) in staging and
+  production; `loadEnv` refuses `local` when `NODE_ENV=production`. docker-compose has no object storage.
 - Queues: produce with `@InjectQueue(QUEUES.x)`. `@Processor` classes go in the module's
   `*.worker.module.ts`, imported only by `src/worker.module.ts`.
 - Email: `NotificationsService.sendEmail({ template, to, data })`. Never send mail inline.
