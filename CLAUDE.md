@@ -44,6 +44,14 @@ pnpm --filter @hongwang/api test:e2e  # needs DATABASE_URL_TEST (Postgres with P
 - `main` is production. It only changes by merging `dev` into it; never commit to `main` directly.
 - Staging deploys from `dev`, production from `main` (implementation plan, M0 5.6).
 
+### Commits
+- Conventional Commits: `type(scope): summary`, imperative, starting lower case, no trailing period,
+  e.g. `feat(web): add the inbox thread list`, `fix(api): keep a host-typed listing area`.
+  Types: `feat`, `fix`, `docs`, `refactor`, `test`, `perf`, `build`, `ci`, `chore`, `style`, `revert`.
+  The scope is optional: an area (`api`, `web`, `shared`, `infra`, `ci`, `deps`) or a module (`bookings`).
+- commitlint (`commitlint.config.mjs`, `@commitlint/config-conventional`) checks every commit through
+  the husky `commit-msg` hook, which `pnpm install` sets up, and in CI on pull requests into `dev`.
+
 ### Contract first
 - Every endpoint's request schema and response type lives in `packages/shared/src/schemas/*.ts`,
   with the route list in that file's header comment. Web and API both import from `@hongwang/shared`.
