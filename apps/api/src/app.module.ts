@@ -3,6 +3,7 @@ import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { JwtAuthGuard } from './common/auth';
+import { CsrfGuard } from './common/csrf';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { HealthController } from './common/health.controller';
 import { CoreModule } from './core.module';
@@ -31,6 +32,7 @@ import { UsersModule } from './modules/users/users.module';
   ],
   controllers: [HealthController],
   providers: [
+    { provide: APP_GUARD, useClass: CsrfGuard },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_PIPE, useClass: ZodValidationPipe },

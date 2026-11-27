@@ -4,7 +4,7 @@ import { UnrecoverableError, type Job } from 'bullmq';
 import type { MailService } from '../../infra/mail/mail.service';
 import { EmailLogRepository } from './email-log.repository';
 import { EMAIL_TEMPLATE_EVENT } from './email-policy';
-import { EmailProcessor } from './email.processor';
+import { EmailProcessor, SKIPPED_BY_PREFERENCES } from './email.processor';
 import type { NotificationPreferencesService } from './notification-preferences.service';
 import { emailSamples } from './templates/samples';
 import { fakeDb } from './testing';
@@ -35,6 +35,7 @@ function setup(opts: { logStatus?: 'queued' | 'sent' | 'failed'; prefEnabled?: b
     markSent: jest.fn().mockResolvedValue(undefined),
     markFailed: jest.fn().mockResolvedValue(undefined),
     recordFailure: jest.fn().mockResolvedValue(undefined),
+    recordSkipped: jest.fn().mockResolvedValue(undefined),
   };
   const prefs = { isEnabled: jest.fn().mockResolvedValue(opts.prefEnabled ?? true) };
   const processor = new EmailProcessor(
@@ -166,6 +167,18 @@ describe('EmailProcessor', () => {
         expect(prefs.isEnabled).toHaveBeenCalledWith(USER, 'news', 'email');
         expect(mail.send).not.toHaveBeenCalled();
         expect(emailLog.start).not.toHaveBeenCalled();
+        expect(emailLog.recordSkipped).toHaveBeenCalledWith(
+          { jobId: 'job-1', to: expect.any(String), template: 'welcome', userId: USER },
+          SKIPPED_BY_PREFERENCES,
+          expect.any(Date),
+        );
+      });
+
+      it('still skips when the skipped row can’t be written', async () => {
+        const { processor, mail, emailLog } = setup({ prefEnabled: false });
+        emailLog.recordSkipped.mockRejectedValueOnce(new Error('db down'));
+        await expect(processor.process(welcomeJob(USER))).resolves.toEqual({ status: 'skipped', reason: 'preferences' });
+        expect(mail.send).not.toHaveBeenCalled();
       });
 
       it('sends when the user has it on, or when there is no user id', async () => {
@@ -208,6 +221,17 @@ describe('EmailLogRepository', () => {
     const fake = fakeDb([[], fk, [{ id: 'log-2', status: 'queued' }]]);
     await expect(new EmailLogRepository(fake.db as never).start(entry, since)).resolves.toEqual({ id: 'log-2', status: 'queued' });
     expect(fake.call(2, 'values')).toEqual([{ ...entry, userId: null, status: 'queued' }]);
+  });
+
+  it('records a skipped email once per job, with the reason', async () => {
+    const fake = fakeDb([[], [{ id: 'log-3', status: 'skipped' }]]);
+    await new EmailLogRepository(fake.db as never).recordSkipped(entry, 'Turned off', since);
+    expect(fake.chains.map((c) => c[0]!.op)).toEqual(['select', 'insert']);
+    expect(fake.call(1, 'values')).toEqual([{ ...entry, status: 'skipped', error: 'Turned off' }]);
+
+    const again = fakeDb([[{ id: 'log-3', status: 'skipped' }]]);
+    await new EmailLogRepository(again.db as never).recordSkipped(entry, 'Turned off', since);
+    expect(again.chains).toHaveLength(1);
   });
 
   it('marks sent with the provider id and clears the error; marks failed with a clipped error', async () => {

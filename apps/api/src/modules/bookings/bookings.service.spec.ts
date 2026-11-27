@@ -69,7 +69,7 @@ function setup(results: unknown[]) {
 }
 
 /** DB results for create() up to (not including) the booking insert. */
-const createPrelude = (l = listing()) => [[l], [], [], [], { rows: [] }, []];
+const createPrelude = (l = listing()) => [[l], [], [], [], { rows: [] } /* listing lock */, { rows: [] }, []];
 
 describe('BookingsService.create', () => {
   it('instant book: inserts a payment_hold with the price snapshot and schedules the hold expiry', async () => {
@@ -118,6 +118,7 @@ describe('BookingsService.create', () => {
     const { m, service } = setup([
       ...createPrelude(),
       throwing(pgError('23505', 'bookings_ref_unique')),
+      { rows: [] } /* listing lock */,
       { rows: [] },
       [],
       [{ id: 'second' }],
@@ -130,7 +131,7 @@ describe('BookingsService.create', () => {
   });
 
   it('expires stale holds first and emails their guests after commit', async () => {
-    const { service, emails, refunds } = setup([[listing()], [], [], [], { rows: [{ id: 'stale' }] }, [], [], [{ id: 'new' }], []]);
+    const { service, emails, refunds } = setup([[listing()], [], [], [], { rows: [] } /* listing lock */, { rows: [{ id: 'stale' }] }, [], [], [{ id: 'new' }], []]);
     await service.create(GUEST, stay, NOW);
     expect(refunds.cancelPending).toHaveBeenCalledWith('stale');
     expect(emails.expired).toHaveBeenCalledWith('stale', 'hold');
@@ -262,7 +263,7 @@ describe('BookingsService.approve / reject', () => {
   const request = () => booking({ status: 'requested', requestExpiresAt: new Date(NOW.getTime() + 3600_000) });
 
   it('moves requested -> payment_hold, schedules the hold and emails the guest', async () => {
-    const { m, service, timeouts, emails } = setup([[request()], { rows: [] }, [], [{ id: 'b1', status: 'payment_hold' }], []]);
+    const { m, service, timeouts, emails } = setup([[request()], { rows: [] } /* listing lock */, { rows: [] }, [], [{ id: 'b1', status: 'payment_hold' }], []]);
     await service.approve(HOST, 'b1', NOW);
     expect(m.ops('update')[0]!.set).toMatchObject({ status: 'payment_hold', approvedAt: NOW });
     expect(timeouts.expireHoldAt).toHaveBeenCalledWith('b1', new Date(NOW.getTime() + PAYMENT_HOLD_TTL_MS));
@@ -270,7 +271,7 @@ describe('BookingsService.approve / reject', () => {
   });
 
   it('returns 409 DATES_UNAVAILABLE when another booking took the dates', async () => {
-    const { service, emails } = setup([[request()], { rows: [] }, [], throwing(pgError('23P01'))]);
+    const { service, emails } = setup([[request()], { rows: [] } /* listing lock */, { rows: [] }, [], throwing(pgError('23P01'))]);
     await expect(service.approve(HOST, 'b1', NOW)).rejects.toMatchObject({ status: 409, code: ERROR_CODES.datesUnavailable });
     expect(emails.approved).not.toHaveBeenCalled();
   });

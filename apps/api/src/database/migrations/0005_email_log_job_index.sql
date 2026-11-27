@@ -1,0 +1,1 @@
+CREATE INDEX "email_log_job_idx" ON "email_log" USING btree ("job_id","created_at") WHERE "email_log"."job_id" is not null;

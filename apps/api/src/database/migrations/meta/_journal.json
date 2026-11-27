@@ -29,6 +29,34 @@
       "when": 1795778732024,
       "tag": "0003_booking_idempotency_key",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795784526711,
+      "tag": "0004_email_status_skipped",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795784540886,
+      "tag": "0005_email_log_job_index",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795784607999,
+      "tag": "0006_users_deleted_without_contact",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795784609003,
+      "tag": "0007_clear_deleted_user_emails",
+      "breakpoints": true
     }
   ]
 }

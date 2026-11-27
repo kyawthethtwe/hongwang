@@ -13,6 +13,8 @@ export const EMAIL_CONCURRENCY = 5;
 
 /** How far a job's own timestamp may be ahead of the database clock when matching its log row. */
 const CLOCK_SKEW_MS = 60_000;
+/** email_log.error on a row skipped by preferences. */
+export const SKIPPED_BY_PREFERENCES = 'Turned off in the user’s notification preferences';
 
 export type EmailJobResult =
   | { status: 'sent'; logId: string; messageId: string }
@@ -52,12 +54,16 @@ export class EmailProcessor extends WorkerHost {
       throw new UnrecoverableError(error);
     }
 
+    const since = new Date(job.timestamp - CLOCK_SKEW_MS);
     if (!(await this.shouldSend(job.data))) {
       this.logger.log(`Skipped ${template} (job ${job.id}): turned off in the user's preferences`);
+      await this.emailLog
+        .recordSkipped(entry, SKIPPED_BY_PREFERENCES, since)
+        .catch((err) => this.logger.error(`email_log write failed: ${errorText(err)}`));
       return { status: 'skipped', reason: 'preferences' };
     }
 
-    const log = await this.emailLog.start(entry, new Date(job.timestamp - CLOCK_SKEW_MS));
+    const log = await this.emailLog.start(entry, since);
     if (log.status === 'sent') {
       // A retry or stalled re-run of a job whose email already went out: never send twice.
       return { status: 'already-sent', logId: log.id };

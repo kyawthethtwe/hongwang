@@ -60,6 +60,7 @@ export const ERROR_CODES = {
   ownListing: 'OWN_LISTING',
   idempotencyKeyReused: 'IDEMPOTENCY_KEY_REUSED',
   rateLimited: 'RATE_LIMITED',
+  unsupportedMediaType: 'UNSUPPORTED_MEDIA_TYPE',
   invalidCredentials: 'INVALID_CREDENTIALS',
   emailTaken: 'EMAIL_TAKEN',
   invalidCode: 'INVALID_CODE',

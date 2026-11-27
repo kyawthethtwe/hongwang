@@ -24,11 +24,24 @@ describe('buildListingPatch', () => {
     expect('exactLocation' in patch).toBe(false);
   });
 
-  it('derives the area from the pin unless it is sent', () => {
-    expect(buildListingPatch(row, { exactLocation: { lat: 13.7334, lng: 100.5137 } }).area).toBe('Talat Noi');
-    expect(buildListingPatch(row, { exactLocation: { lat: 13.7334, lng: 100.5137 }, area: 'Riverside' }).area).toBe('Riverside');
-    // Far from every known neighbourhood: falls back to the subdistrict.
-    expect(buildListingPatch(row, { exactLocation: { lat: 13.9, lng: 100.7 }, subdistrict: 'Min Buri' }).area).toBe('Min Buri');
+  it('fills an empty area from the pin', () => {
+    const noArea = listingRow({ area: '' });
+    const pin = { lat: 13.7334, lng: 100.5137 };
+    expect(buildListingPatch(noArea, { exactLocation: pin }).area).toBe('Talat Noi');
+    // The editor sends the (empty) field with the pin.
+    expect(buildListingPatch(noArea, { exactLocation: pin, area: '' }).area).toBe('Talat Noi');
+    expect(buildListingPatch(noArea, { exactLocation: pin, area: '  ' }).area).toBe('Talat Noi');
+    // Far from every known neighbourhood: falls back to the subdistrict, sent or stored.
+    expect(buildListingPatch(noArea, { exactLocation: { lat: 13.9, lng: 100.7 }, subdistrict: 'Min Buri' }).area).toBe('Min Buri');
+    expect(buildListingPatch(listingRow({ area: '', subdistrict: 'Min Buri' }), { exactLocation: { lat: 13.9, lng: 100.7 }, subdistrict: '' }).area).toBe(
+      'Min Buri',
+    );
+  });
+
+  it('never replaces an area the host typed when the pin moves', () => {
+    const pin = { lat: 13.7334, lng: 100.5137 }; // Talat Noi
+    expect(buildListingPatch(listingRow({ area: 'Ari' }), { exactLocation: pin }).area).toBeUndefined();
+    expect(buildListingPatch(listingRow({ area: '' }), { exactLocation: pin, area: 'Riverside' }).area).toBe('Riverside');
   });
 
   it('rejects max nights below min nights, using stored values for the other side', () => {

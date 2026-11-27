@@ -49,7 +49,8 @@ export function LocationSection(props: SectionProps) {
       district: listing.district ?? '',
       province: listing.province || 'Bangkok',
       postcode: listing.postcode ?? '',
-      area: listing.area,
+      // The saved value, not the display fallback, so an untouched empty field lets the pin fill it.
+      area: listing.storedArea,
       nearestStation: listing.nearestStation ?? '',
       stationWalkMinutes: listing.stationWalkMinutes,
       exactLocation: listing.exactLocation,
@@ -104,7 +105,7 @@ export function LocationSection(props: SectionProps) {
         <Field label="Postcode" error={msg(errors.postcode)}>
           {(p) => <Input {...p} inputMode="numeric" maxLength={5} autoComplete="postal-code" {...register('postcode')} />}
         </Field>
-        <Field label="Neighbourhood guests see" hint="e.g. Ari, Thong Lo, Talat Noi" error={msg(errors.area)}>
+        <Field label="Neighbourhood guests see" hint="e.g. Ari, Thong Lo, Talat Noi. Leave it empty to use your pin’s neighbourhood." error={msg(errors.area)}>
           {(p) => <Input {...p} maxLength={60} {...register('area')} />}
         </Field>
         <div className="hidden sm:block" />

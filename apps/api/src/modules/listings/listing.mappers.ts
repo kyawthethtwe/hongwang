@@ -92,6 +92,7 @@ export function toHostListing(l: ListingRow, photos: PhotoRow[]): HostListingDto
   return {
     ...toDetailBase(l, photos),
     hostId: l.hostId,
+    storedArea: l.area,
     addressLine: l.addressLine,
     postcode: l.postcode,
     exactLocation: toLatLng(l.location),

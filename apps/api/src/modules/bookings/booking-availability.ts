@@ -57,6 +57,17 @@ export async function priceOverridesFor(db: DbOrTx, listingId: string, checkIn: 
 }
 
 /**
+ * Takes this listing's row lock for the rest of the transaction. Call it first in every
+ * transaction that puts a booking into bookings_no_overlap (create, approve). Without it, two
+ * transactions writing overlapping nights each wait on the other's uncommitted row in the EXCLUDE
+ * constraint, and Postgres aborts one with a deadlock (40P01) instead of a clean 23P01.
+ * NO KEY UPDATE doesn't block the foreign-key checks of bookings inserts.
+ */
+export async function lockListingDates(tx: DbOrTx, listingId: string): Promise<void> {
+  await tx.execute(sql`SELECT 1 FROM listings WHERE id = ${listingId} FOR NO KEY UPDATE`);
+}
+
+/**
  * Expires this listing's payment holds that ran out (payment_hold -> expired, by the system), so
  * their nights are free for the booking being created in the same transaction. Rows another
  * transaction is already expiring are skipped (SKIP LOCKED), so concurrent creates never deadlock.
