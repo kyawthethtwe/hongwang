@@ -213,6 +213,8 @@ with Stripe test mode.
 - [ ] **Rate limits behind the proxy**: confirm `X-Forwarded-For` reaches the API through the Next rewrite in staging so throttling is per visitor; add per-user limits on booking creation.
 - [ ] **Deleted accounts**: migrate the `users_email_or_phone` check to allow deleted users with neither email nor phone, and stop writing `deleted+<id>@hongwang.invalid`. Move the "pause listings on account deletion" write into `ListingsService`.
 - [ ] **Listing area**: moving the map pin currently overwrites a host-typed `area`; only auto-fill when the host hasn't set one.
+- [ ] **Log skipped emails**: when the user's preferences turn an email off, `EmailProcessor` returns `skipped` without writing to `email_log`, so the log can't show it. Add `skipped` to the `email_status` enum (generated migration) and record the row with its reason. Nothing is skipped today (every booking email's channel is locked), but reminder and marketing mail will be.
+- [ ] **Index `email_log.job_id`**: `EmailLogRepository.start` looks up the job's row by `job_id` and `created_at` on every run, and only `user_id` is indexed. Add an index on `(job_id, created_at)` in `schema/users.ts` and generate the migration.
 
 ### 5.3 Payments
 - [ ] Run checkout with real Stripe **test** keys: card (4242…), 3-D Secure test card, and PromptPay; forward webhooks with `stripe listen`.
@@ -424,8 +426,8 @@ Pick these up any time after M1; each is independent.
 | `POST /bookings` can commit then fail on the read | Guest sees an error while dates are held | Idempotency key + safe retry | M0 |
 | Deleted users keep a placeholder email | Constraint workaround | Relax the check constraint for deleted users | M0 |
 | No email for a payment refunded because it arrived late | Guest isn't told | New template | M0 |
-| Emails skipped by preferences aren't logged | Harder to debug | Add `skipped` to `email_status` | M0 |
-| `email_log.job_id` has no index | Slow lookups at scale | Add index | M0 |
+| Emails skipped by preferences aren't logged | Harder to debug | Add `skipped` to `email_status` (5.2) | M0 |
+| `email_log.job_id` has no index | Slow lookups at scale | Add index (5.2) | M0 |
 | Moving the map pin overwrites a typed `area` | Host's text lost | Only auto-fill when empty | M0 |
 | Calendar drag-select works with a mouse only | Touch users select one night at a time | Pointer events | M6 |
 | Web app has no test runner | UI logic untested | Vitest + Playwright | M0 |
