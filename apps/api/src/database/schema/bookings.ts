@@ -1,6 +1,6 @@
 import type { NightPrice } from '@hongwang/shared';
 import { sql } from 'drizzle-orm';
-import { boolean, check, date, index, integer, jsonb, pgTable, text, uuid, varchar } from 'drizzle-orm/pg-core';
+import { boolean, check, date, index, integer, jsonb, pgTable, text, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core';
 import {
   bookingActorEnum,
   bookingStatusEnum,
@@ -56,6 +56,8 @@ export const bookings = pgTable(
     cancellationPolicy: cancellationPolicyEnum('cancellation_policy').notNull(),
     instant: boolean('instant').notNull(),
     message: text('message'),
+    /** The guest's Idempotency-Key for POST /bookings; unique per guest (bookings_guest_idempotency_key_unique). */
+    idempotencyKey: text('idempotency_key'),
     // lifecycle
     requestExpiresAt: tstz('request_expires_at'),
     holdExpiresAt: tstz('hold_expires_at'),
@@ -79,6 +81,9 @@ export const bookings = pgTable(
     index('bookings_listing_idx').on(t.listingId),
     index('bookings_hold_expiry_idx').on(t.holdExpiresAt).where(sql`${t.status} = 'payment_hold'`),
     index('bookings_request_expiry_idx').on(t.requestExpiresAt).where(sql`${t.status} = 'requested'`),
+    uniqueIndex('bookings_guest_idempotency_key_unique')
+      .on(t.guestId, t.idempotencyKey)
+      .where(sql`${t.idempotencyKey} is not null`),
     check('bookings_not_own_listing', sql`${t.guestId} <> ${t.hostId}`),
     check('bookings_dates_valid', sql`${t.checkOut} > ${t.checkIn}`),
     check('bookings_guests_positive', sql`${t.guests} >= 1`),

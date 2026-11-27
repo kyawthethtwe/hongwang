@@ -9,6 +9,18 @@ export const satangSchema = z.number().int().nonnegative();
 export const idParamSchema = z.object({ id: z.uuid() });
 export type IdParam = z.infer<typeof idParamSchema>;
 
+/**
+ * Optional request header that makes a create safe to retry (POST /bookings): send a fresh random
+ * value (a UUID) per attempt and the same value on every retry of that attempt. A repeat returns
+ * what the first request created; the same key with a different request is 422 IDEMPOTENCY_KEY_REUSED.
+ */
+export const IDEMPOTENCY_KEY_HEADER = 'Idempotency-Key';
+export const idempotencyKeySchema = z
+  .string()
+  .min(16)
+  .max(128)
+  .regex(/^[A-Za-z0-9._-]+$/, 'Use letters, digits, dot, dash or underscore');
+
 export const pageQuerySchema = z.object({
   cursor: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(100).default(20),
@@ -46,6 +58,7 @@ export const ERROR_CODES = {
   invalidTransition: 'INVALID_TRANSITION',
   holdExpired: 'HOLD_EXPIRED',
   ownListing: 'OWN_LISTING',
+  idempotencyKeyReused: 'IDEMPOTENCY_KEY_REUSED',
   rateLimited: 'RATE_LIMITED',
   invalidCredentials: 'INVALID_CREDENTIALS',
   emailTaken: 'EMAIL_TAKEN',

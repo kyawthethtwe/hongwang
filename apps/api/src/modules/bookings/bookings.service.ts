@@ -45,6 +45,7 @@ import { applyTransition, assertTransition, invalidTransition, type BookingRow }
 /** Longest range we price at all (max_nights catches anything above the listing's own limit). */
 const MAX_QUOTED_NIGHTS = 731;
 const REF_ATTEMPTS = 5;
+const IDEMPOTENCY_KEY_CONSTRAINT = 'bookings_guest_idempotency_key_unique';
 
 export const datesUnavailable = (message = 'Those dates aren’t available any more') =>
   new AppException(409, ERROR_CODES.datesUnavailable, message);
@@ -116,7 +117,36 @@ export class BookingsService {
 
   // ---------------------------------------------------------------- create
 
-  async create(user: AuthUser, input: CreateBookingInput, now = new Date()): Promise<BookingDto> {
+  /**
+   * With an Idempotency-Key, a retry gets the booking the first attempt created instead of a 409
+   * against the guest's own hold. The key is stored on the booking in the same transaction, so
+   * neither a response lost after commit nor a double submit can create a second booking.
+   */
+  async create(
+    user: AuthUser,
+    input: CreateBookingInput,
+    now = new Date(),
+    idempotencyKey: string | null = null,
+  ): Promise<BookingDto> {
+    if (!idempotencyKey) return this.createNew(user, input, now, null);
+    const prior = await this.findByIdempotencyKey(user.id, idempotencyKey);
+    if (prior) return this.replay(user, prior, input);
+    try {
+      return await this.createNew(user, input, now, idempotencyKey);
+    } catch (err) {
+      // A concurrent request with the same key got there first (its key row, or its hold on the
+      // dates): answer with that booking.
+      const lostRace =
+        isUniqueViolation(err, IDEMPOTENCY_KEY_CONSTRAINT) ||
+        (err instanceof AppException && err.code === ERROR_CODES.datesUnavailable);
+      if (!lostRace) throw err;
+      const winner = await this.findByIdempotencyKey(user.id, idempotencyKey);
+      if (winner) return this.replay(user, winner, input);
+      throw err;
+    }
+  }
+
+  private async createNew(user: AuthUser, input: CreateBookingInput, now: Date, idempotencyKey: string | null): Promise<BookingDto> {
     const listing = await this.loadListing(input.listingId);
     if (!listing) throw notFound('Listing');
     if (listing.hostId === user.id) {
@@ -171,6 +201,7 @@ export class BookingsService {
             cancellationPolicy: listing.cancellationPolicy,
             instant,
             message,
+            idempotencyKey,
             holdExpiresAt,
             requestExpiresAt,
           })
@@ -188,13 +219,42 @@ export class BookingsService {
     );
 
     await this.afterHoldsExpired(created.expired);
-    if (holdExpiresAt) {
-      await this.timeouts.expireHoldAt(created.id, holdExpiresAt);
-    } else if (requestExpiresAt) {
-      await this.timeouts.expireRequestAt(created.id, requestExpiresAt);
-      await this.emails.requested(created.id);
-    }
+    await this.afterCreate({ id: created.id, status, holdExpiresAt, requestExpiresAt });
     return this.dto(created.id, user);
+  }
+
+  /** Deadline jobs and request emails for a new booking. Each is deduplicated by job id, so a replay can run it again. */
+  private async afterCreate(b: Pick<BookingRow, 'id' | 'status' | 'holdExpiresAt' | 'requestExpiresAt'>) {
+    if (b.status === 'payment_hold' && b.holdExpiresAt) {
+      await this.timeouts.expireHoldAt(b.id, b.holdExpiresAt);
+    } else if (b.status === 'requested' && b.requestExpiresAt) {
+      await this.timeouts.expireRequestAt(b.id, b.requestExpiresAt);
+      await this.emails.requested(b.id);
+    }
+  }
+
+  /** A retry of a create that already happened: same stay, so return that booking as it is now. */
+  private async replay(user: AuthUser, prior: BookingRow, input: CreateBookingInput): Promise<BookingDto> {
+    const sameStay =
+      prior.listingId === input.listingId &&
+      prior.checkIn === input.checkIn &&
+      prior.checkOut === input.checkOut &&
+      prior.guests === input.guests;
+    if (!sameStay) {
+      throw new AppException(422, ERROR_CODES.idempotencyKeyReused, 'That Idempotency-Key was already used for a different stay');
+    }
+    // The first attempt may have failed between commit and its follow-up work.
+    await this.afterCreate(prior);
+    return this.dto(prior.id, user);
+  }
+
+  private async findByIdempotencyKey(guestId: string, key: string): Promise<BookingRow | null> {
+    const [row] = await this.db
+      .select()
+      .from(bookings)
+      .where(and(eq(bookings.guestId, guestId), eq(bookings.idempotencyKey, key)))
+      .limit(1);
+    return row ?? null;
   }
 
   // ---------------------------------------------------------------- host: approve / reject

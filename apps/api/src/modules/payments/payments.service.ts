@@ -69,6 +69,11 @@ export class PaymentsService {
 
   // ---------------------------------------------------------------- intent
 
+  /**
+   * Safe to retry without an Idempotency-Key: a retry finds and returns the booking's open intent
+   * (reusableIntent), and two first calls at once send Stripe the same idempotency key (same intent
+   * count), so Stripe hands both the same intent and the upsert on stripe_payment_intent_id keeps one row.
+   */
   async createIntent(user: AuthUser, input: { bookingId: string; method?: PaymentMethod }, now = new Date()): Promise<PaymentIntentDto> {
     const b = await this.payableBooking(user, input.bookingId, now);
     const method = input.method ?? 'card';

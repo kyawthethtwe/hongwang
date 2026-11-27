@@ -126,9 +126,11 @@ describeDb('booking concurrency (real Postgres, EXCLUDE constraint)', () => {
     );
     expect(rejected(requests)).toEqual([]);
     expect(await heldCount(listing.id)).toBe(0);
-    expect(app.notifications.sendEmail).toHaveBeenCalledWith(expect.objectContaining({ template: 'booking-requested-host' }));
-
     const ids = fulfilled(requests).map((r) => (r.value as { id: string }).id);
+    // Once-only job ids, so a replayed create can't email the host twice.
+    expect(app.notifications.sendEmail).toHaveBeenCalledWith(expect.objectContaining({ template: 'booking-requested-host' }), {
+      jobId: `booking-requested-host-${ids[0]}`,
+    });
     const approvals = await Promise.allSettled(ids.map((id) => app.bookings.approve(host, id)));
     expect(fulfilled(approvals)).toHaveLength(1);
     expect(rejected(approvals)).toHaveLength(4);
@@ -169,6 +171,46 @@ describeDb('booking concurrency (real Postgres, EXCLUDE constraint)', () => {
     await expect(app.payments.simulate(second!, next.id)).resolves.toMatchObject({ status: 'confirmed' });
     await expect(book(third!, stay)).rejects.toMatchObject({ code: ERROR_CODES.datesUnavailable });
     expect(await heldCount(listing.id)).toBe(1);
+  });
+
+  it('Idempotency-Key: 10 parallel attempts with one key make one booking and all get it back', async () => {
+    const listing = await createListing(app.db, host.id, { instantBook: true });
+    const [guest] = await createUsers(app.db, 'guest', 1);
+    const key = 'c0ffee00-1111-4222-8333-444455556666';
+    const stay = { listingId: listing.id, checkIn: day(0), checkOut: day(3), guests: 1 };
+
+    const results = await Promise.allSettled(Array.from({ length: 10 }, () => app.bookings.create(guest!, stay, new Date(), key)));
+    expect(rejected(results)).toEqual([]);
+    const ids = new Set(fulfilled(results).map((r) => (r.value as { id: string }).id));
+    expect(ids.size).toBe(1);
+
+    // A later retry (the response was lost) gets the same hold instead of a 409 against itself.
+    await expect(app.bookings.create(guest!, stay, new Date(), key)).resolves.toMatchObject({ id: [...ids][0], status: 'payment_hold' });
+    const [all] = await app.db.select({ n: sql<number>`count(*)::int` }).from(bookings);
+    expect(all!.n).toBe(1);
+
+    // Without the key (or with a new one) it's a new attempt, and the dates are taken.
+    await expect(book(guest!, stay)).rejects.toMatchObject({ code: ERROR_CODES.datesUnavailable });
+    await expect(app.bookings.create(guest!, { ...stay, guests: 2 }, new Date(), key)).rejects.toMatchObject({
+      status: 422,
+      code: ERROR_CODES.idempotencyKeyReused,
+    });
+  });
+
+  it('Idempotency-Key: parallel requests to book with one key make one request (requests hold no dates)', async () => {
+    const listing = await createListing(app.db, host.id, { instantBook: false });
+    const [guest, other] = await createUsers(app.db, 'guest', 2);
+    const key = 'c0ffee00-1111-4222-8333-777788889999';
+    const stay = { listingId: listing.id, checkIn: day(0), checkOut: day(3), guests: 1, message: 'Hi! Quiet guest.' };
+
+    const results = await Promise.allSettled(Array.from({ length: 5 }, () => app.bookings.create(guest!, stay, new Date(), key)));
+    expect(rejected(results)).toEqual([]);
+    expect(new Set(fulfilled(results).map((r) => (r.value as { id: string }).id)).size).toBe(1);
+    const [mine] = await app.db.select({ n: sql<number>`count(*)::int` }).from(bookings).where(eq(bookings.guestId, guest!.id));
+    expect(mine!.n).toBe(1);
+
+    // Keys are per guest: another guest's request with the same key is its own booking.
+    await expect(app.bookings.create(other!, stay, new Date(), key)).resolves.toMatchObject({ status: 'requested' });
   });
 
   it('a guest can’t book their own listing', async () => {

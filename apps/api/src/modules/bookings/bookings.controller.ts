@@ -2,6 +2,7 @@ import { rejectBookingInputSchema, type BookingDto, type QuoteDto, type RefundQu
 import { Body, Controller, Get, HttpCode, Param, Post, Query } from '@nestjs/common';
 import { CurrentUser, OptionalAuth, type AuthUser } from '../../common/auth';
 import { badRequest } from '../../common/errors';
+import { IdempotencyKey } from '../../common/idempotency';
 import { BookingsService } from './bookings.service';
 import {
   BookingIdParams,
@@ -24,8 +25,12 @@ export class BookingsController {
   }
 
   @Post()
-  create(@CurrentUser() user: AuthUser, @Body() body: CreateBookingBody): Promise<BookingDto> {
-    return this.bookings.create(user, body);
+  create(
+    @CurrentUser() user: AuthUser,
+    @Body() body: CreateBookingBody,
+    @IdempotencyKey() idempotencyKey: string | null,
+  ): Promise<BookingDto> {
+    return this.bookings.create(user, body, new Date(), idempotencyKey);
   }
 
   @Get('mine')

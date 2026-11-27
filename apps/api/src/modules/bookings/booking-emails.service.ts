@@ -24,23 +24,36 @@ export class BookingEmails {
     private readonly notifications: NotificationsService,
   ) {}
 
-  /** Request to book: host gets the request, guest gets "request sent". */
+  /**
+   * Request to book: host gets the request, guest gets "request sent". Job ids are fixed per booking,
+   * so a replayed POST /bookings (Idempotency-Key) doesn't send them twice.
+   */
   requested(bookingId: string) {
     return this.run(bookingId, async (c) => {
       const respondBy = c.b.requestExpiresAt ? formatBangkokDateTime(c.b.requestExpiresAt) : '';
-      await this.send('booking-requested-host', c.host, {
-        ...c.base(c.host, c.guest),
-        message: c.b.message,
-        payout: formatTHB(c.b.hostPayout),
-        respondBy,
-        reservationUrl: this.url(`/host/reservations/${c.b.id}`),
-      });
-      await this.send('booking-request-sent-guest', c.guest, {
-        ...c.base(c.guest, c.host),
-        total: formatTHB(c.b.total),
-        respondBy,
-        tripUrl: this.url(`/trips/${c.b.id}`),
-      });
+      await this.send(
+        'booking-requested-host',
+        c.host,
+        {
+          ...c.base(c.host, c.guest),
+          message: c.b.message,
+          payout: formatTHB(c.b.hostPayout),
+          respondBy,
+          reservationUrl: this.url(`/host/reservations/${c.b.id}`),
+        },
+        `booking-requested-host-${c.b.id}`,
+      );
+      await this.send(
+        'booking-request-sent-guest',
+        c.guest,
+        {
+          ...c.base(c.guest, c.host),
+          total: formatTHB(c.b.total),
+          respondBy,
+          tripUrl: this.url(`/trips/${c.b.id}`),
+        },
+        `booking-request-sent-guest-${c.b.id}`,
+      );
     });
   }
 
@@ -112,9 +125,11 @@ export class BookingEmails {
     return new URL(path, this.env.WEB_ORIGIN).toString();
   }
 
-  private async send<T extends EmailTemplate>(template: T, to: Party, data: EmailJob<T>['data']) {
+  /** `jobId` makes the email once-only: BullMQ ignores a second job with the same id. No ':' allowed. */
+  private async send<T extends EmailTemplate>(template: T, to: Party, data: EmailJob<T>['data'], jobId?: string) {
     if (!to.email) return; // phone-only account: nothing to send to
-    await this.notifications.sendEmail({ template, to: to.email, data, userId: to.id });
+    const job = { template, to: to.email, data, userId: to.id };
+    await (jobId ? this.notifications.sendEmail(job, { jobId }) : this.notifications.sendEmail(job));
   }
 
   private async run(bookingId: string, fn: (c: EmailContext) => Promise<void>): Promise<void> {
