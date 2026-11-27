@@ -184,12 +184,14 @@ export class PaymentsService {
           .where(eq(bookings.id, current.id));
       }
       this.logger.warn({ bookingId, status: current.status, refunded }, 'Payment arrived after the booking ended; refunded');
-      return { outcome: 'refunded_late' as const };
+      return { outcome: 'refunded_late' as const, refunded };
     });
 
     if (result.outcome === 'confirmed') {
       await this.emails.confirmed(bookingId);
       await this.timeouts.completeAfter(bookingId, result.booking.checkOut);
+    } else if (result.outcome === 'refunded_late' && result.refunded > 0) {
+      await this.emails.refundedLate(bookingId, result.refunded);
     }
     return result.outcome;
   }

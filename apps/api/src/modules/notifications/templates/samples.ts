@@ -82,6 +82,7 @@ export function emailSamples(webOrigin = 'http://localhost:3000'): EmailSamples 
       { variant: 'by-admin', data: { ...host, cancelledBy: 'admin', penalty: null, reservationUrl } },
       { variant: 'by-system', data: { ...host, cancelledBy: 'system', penalty: null, reservationUrl } },
     ],
+    'booking-payment-refunded-late': [{ variant: 'default', data: { ...guest, refund: '฿4,290', listingUrl } }],
     'listing-published-host': [{ variant: 'default', data: { firstName: 'Ploy', listingTitle: 'Sunny studio near BTS Ari', listingUrl } }],
   };
 }
@@ -100,5 +101,6 @@ export const MAIN_URL_KEY: { readonly [T in EmailTemplate]: keyof EmailTemplateD
   'booking-confirmed-host': 'reservationUrl',
   'booking-cancelled-guest': 'tripUrl',
   'booking-cancelled-host': 'reservationUrl',
+  'booking-payment-refunded-late': 'listingUrl',
   'listing-published-host': 'listingUrl',
 };

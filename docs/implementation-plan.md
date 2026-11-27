@@ -220,25 +220,25 @@ with Stripe test mode.
 ### 5.3 Payments
 - [ ] Run checkout with real Stripe **test** keys: card (4242…), 3-D Secure test card, and PromptPay; forward webhooks with `stripe listen`.
 - [ ] Decide what "Mobile banking" maps to in Thailand (currently treated as card) or hide it.
-- [ ] Add a `booking-payment-refunded-late` email for money that arrives after the hold expired (today it is only logged).
-- [ ] Webhook replay test: the same event twice changes nothing (`stripe_events`).
+- [x] Add a `booking-payment-refunded-late` email for money that arrives after the hold expired (today it is only logged). Done 2026-11-27: new template in `@hongwang/shared` (`EMAIL_TEMPLATES` + `EmailTemplateData`) and `notifications/templates/booking-payment-refunded-late.ts`. `PaymentsService.confirmPayment` sends it through `BookingEmails.refundedLate` after a late payment is refunded (not when nothing could be refunded). Unit tests cover both cases; the template tests render its sample.
+- [x] Webhook replay test: the same event twice changes nothing (`stripe_events`). Done 2026-11-27: `test/stripe-webhook.e2e-spec.ts`. The real Stripe SDK checks the signatures (`generateTestHeaderString`), and nothing calls Stripe. The same `payment_intent.succeeded` delivered twice, one after the other and also both at once, gives one confirmation, one payment row, one booking event and one set of confirmation emails; a forged signature changes nothing. `createBookingTestApp` takes `{ stripe }` for this.
 
 ### 5.4 Tests
-- [ ] DB e2e tests for search (bbox, dates, filters, sort), availability, saved, host calendar blocks (409 path) and special prices.
-- [ ] Auth e2e: register, login, refresh rotation, refresh-token reuse, logout, password reset.
-- [ ] Web unit tests (Vitest + Testing Library) for pure UI logic: the range calendar click logic (`components/search/range.ts`), search URL params, money formatting.
-- [ ] Playwright golden paths against seeded data: guest search → reserve → simulated pay → trip; host approve request → guest pays; host block dates.
+- [x] DB e2e tests for search (bbox, dates, filters, sort), availability, saved, host calendar blocks (409 path) and special prices. Done 2026-11-27: `test/listings-search.e2e-spec.ts` (10 tests). It covers the map box and places, held, blocked and back-to-back nights, every filter, sorting and the cursor, special prices in stay totals and availability, saved rooms with dates, the 409 with the booked nights, and owner-only calendar edits.
+- [x] Auth e2e: register, login, refresh rotation, refresh-token reuse, logout, password reset. Done 2026-11-27: `test/auth.e2e-spec.ts` (6 tests) through `AuthService` with the real sessions and tokens. A racing tab inside the grace window is only `stale`; reuse after it revokes the session. The reset link works once and signs out everywhere.
+- [x] Web unit tests (Vitest + Testing Library) for pure UI logic: the range calendar click logic (`components/search/range.ts`), search URL params, money formatting. Done 2026-11-27 with Vitest only (`apps/web/vitest.config.ts`, `*.test.ts` next to the code, 20 tests): the logic is pure, so Testing Library isn't needed yet. `pnpm test` (and CI) runs them.
+- [x] Playwright golden paths against seeded data: guest search → reserve → simulated pay → trip; host approve request → guest pays; host block dates. Done 2026-11-27: `apps/web/e2e/` and `playwright.config.ts`, run with `pnpm --filter @hongwang/web test:e2e` against a running, seeded app (`E2E_BASE_URL` for staging). A setup project signs each account in once (login allows 10 a minute per IP). Each path picks free dates 4 to 10 months out and undoes its booking or blocks in a `finally`, so runs repeat on the same data: 3 runs in a row passed against `pnpm dev`. Locally it drives the installed Chrome. Not in CI yet: that needs the app, Postgres and Redis running in the job, plus `playwright install chromium`; staging (5.6) is the first place it runs automatically.
 
 ### 5.5 Data
 - [ ] Seed real sample photos (5+ per listing) so listing pages, cards and the editor's photo step look like the design.
-- [ ] Add a few listings outside Ari so search across Bangkok places looks populated.
+- [x] Add a few listings outside Ari so search across Bangkok places looks populated. Done 2026-11-27: eight more seed listings (Thong Lo, Asok, Silom, Sathorn, Old Town, Chatuchak, Ekkamai, Riverside), 17 in all. Checked by seeding the test database; run `pnpm db:seed` to get them locally (it resets the dev data).
 
 ### 5.6 Staging deployment
 - [ ] Environments: `staging` now (deployed from `dev`), `production` at launch (deployed from `main`). Separate Stripe test/live keys, buckets and databases.
 - [ ] Deploy web, API and worker (see section 12), run `pnpm db:migrate` as a release step, never on boot.
 - [ ] Stripe webhook endpoint, R2 bucket with a public CDN domain, transactional email provider (SMTP), secrets in the host's secret store. Set the web app's `STORAGE_ORIGINS` to the R2 endpoint and the public photo domain, or the CSP blocks photos and uploads.
 - [ ] Photo storage on R2: `STORAGE_DRIVER=s3` and every `S3_*` value (the API refuses to start in production without them), and a bucket CORS rule allowing `PUT` with the `Content-Type` header from the site's origin, because the browser uploads straight to the bucket. Development never exercises this path, so test a photo upload on staging first.
-- [ ] Smoke test on staging: the four Playwright golden paths.
+- [ ] Smoke test on staging: the three Playwright golden paths (`E2E_BASE_URL=https://... pnpm --filter @hongwang/web test:e2e`).
 
 **Done when:** CI is green on `main`, staging runs all golden paths with Stripe test mode, and the
 security items above are closed.
@@ -426,12 +426,12 @@ Pick these up any time after M1; each is independent.
 | Access token valid up to 15 min after its session is revoked | Signed-out devices keep working briefly | Guard checks the session row on every request (5.2) | M0 |
 | `POST /bookings` can commit then fail on the read | Guest sees an error while dates are held | Idempotency key + safe retry (5.2, done) | M0 |
 | Deleted users keep a placeholder email | Constraint workaround | Relax the check constraint for deleted users (5.2, done) | M0 |
-| No email for a payment refunded because it arrived late | Guest isn't told | New template | M0 |
+| No email for a payment refunded because it arrived late | Guest isn't told | New template (5.3, done) | M0 |
 | Emails skipped by preferences aren't logged | Harder to debug | Add `skipped` to `email_status` (5.2, done) | M0 |
 | `email_log.job_id` has no index | Slow lookups at scale | Add index (5.2, done) | M0 |
 | Moving the map pin overwrites a typed `area` | Host's text lost | Only auto-fill when empty (5.2, done) | M0 |
 | Calendar drag-select works with a mouse only | Touch users select one night at a time | Pointer events | M6 |
-| Web app has no test runner | UI logic untested | Vitest + Playwright | M0 |
+| Web app has no test runner | UI logic untested | Vitest + Playwright (5.4, done) | M0 |
 | Seed listings have no photos | Pages look empty; can't resubmit seeded listings | Seed sample photos | M0 |
 
 ---

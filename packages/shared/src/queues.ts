@@ -40,6 +40,7 @@ export const EMAIL_TEMPLATES = [
   'booking-confirmed-host',
   'booking-cancelled-guest',
   'booking-cancelled-host',
+  'booking-payment-refunded-late',
   'listing-published-host',
 ] as const;
 export type EmailTemplate = (typeof EMAIL_TEMPLATES)[number];
@@ -115,6 +116,12 @@ export interface EmailTemplateData {
     /** Fee charged to the host when they cancelled, else null */
     penalty: string | null;
     reservationUrl: string;
+  };
+  /** To the guest when their payment arrived after the booking ended (hold expired, cancelled, declined) and was refunded in full. */
+  'booking-payment-refunded-late': BookingEmailBase & {
+    /** The refunded amount, e.g. '฿4,290' */
+    refund: string;
+    listingUrl: string;
   };
   'listing-published-host': { firstName: string; listingTitle: string; listingUrl: string };
 }

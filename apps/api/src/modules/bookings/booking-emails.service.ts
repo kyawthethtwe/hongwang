@@ -84,6 +84,17 @@ export class BookingEmails {
     );
   }
 
+  /** The guest's payment arrived after the booking ended and `amount` (satang) went back to them. */
+  refundedLate(bookingId: string, amount: number) {
+    return this.run(bookingId, (c) =>
+      this.send('booking-payment-refunded-late', c.guest, {
+        ...c.base(c.guest, c.host),
+        refund: formatTHB(amount),
+        listingUrl: this.url(`/rooms/${c.b.listingId}?checkIn=${c.b.checkIn}&checkOut=${c.b.checkOut}&guests=${c.b.guests}`),
+      }),
+    );
+  }
+
   confirmed(bookingId: string) {
     return this.run(bookingId, async (c) => {
       const l = c.listing;

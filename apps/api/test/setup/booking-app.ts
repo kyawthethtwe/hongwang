@@ -42,15 +42,21 @@ export interface BookingTestApp {
 /**
  * BookingsModule + PaymentsModule wired to the real test database. The pool is big enough for 50
  * truly concurrent transactions (Postgres' default max_connections is 100).
+ * Payments are simulated unless `stripe` is given: then the real Stripe SDK verifies webhook
+ * signatures (no network calls as long as the test events carry their charge inline).
  */
-export async function createBookingTestApp(url: string): Promise<BookingTestApp> {
+export async function createBookingTestApp(
+  url: string,
+  opts: { stripe?: { secretKey: string; webhookSecret: string } } = {},
+): Promise<BookingTestApp> {
   const { pool, db } = createDatabase(url, 60);
   const env = envSchema.parse({
     NODE_ENV: 'test',
     DATABASE_URL: url,
     JWT_ACCESS_SECRET: 'e2e-access-secret-0123456789abcdef0123',
     JWT_REFRESH_SECRET: 'e2e-refresh-secret-0123456789abcdef012',
-    STRIPE_SECRET_KEY: '', // simulated payments
+    STRIPE_SECRET_KEY: opts.stripe?.secretKey ?? '', // '' = simulated payments
+    ...(opts.stripe ? { STRIPE_WEBHOOK_SECRET: opts.stripe.webhookSecret } : {}),
   });
   const queue = { add: jest.fn(async () => ({})), upsertJobScheduler: jest.fn(async () => ({})) };
   const notifications = { sendEmail: jest.fn(async () => undefined) };
