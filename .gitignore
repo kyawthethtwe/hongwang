@@ -10,3 +10,8 @@ coverage/
 apps/api/uploads/
 .DS_Store
 next-env.d.ts
+
+# Playwright
+apps/web/test-results/
+apps/web/playwright-report/
+apps/web/e2e/.auth/

@@ -42,7 +42,7 @@ function setup(results: unknown[], opts: { stripe?: ReturnType<typeof fakeStripe
   const stripeService = { client: stripe, publishableKey: stripe ? 'pk_test_1' : null, webhookSecret: stripe ? 'whsec_1' : null };
   const refunds = { refund: jest.fn(async (_tx: unknown, _id: string, amount: number) => amount), cancelPending: jest.fn() };
   const read = { findDto: jest.fn(async (id: string) => ({ id, status: 'confirmed' })) };
-  const emails = { confirmed: jest.fn() };
+  const emails = { confirmed: jest.fn(), refundedLate: jest.fn() };
   const timeouts = { completeAfter: jest.fn() };
   const env = { NODE_ENV: 'development', ...opts.env } as Env;
   const service = new PaymentsService(
@@ -150,6 +150,14 @@ describe('PaymentsService.confirmPayment', () => {
     expect(refunds.refund).toHaveBeenCalledWith(m.db, 'b1', 429000, 'late-payment');
     expect(m.ops('update').at(-1)!.set).toMatchObject({ refundAmount: 429000 });
     expect(emails.confirmed).not.toHaveBeenCalled();
+    expect(emails.refundedLate).toHaveBeenCalledWith('b1', 429000);
+  });
+
+  it('sends no refund email when nothing could be refunded', async () => {
+    const { service, refunds, emails } = setup([[booking({ status: 'cancelled' })], []]);
+    refunds.refund.mockResolvedValueOnce(0);
+    await expect(service.confirmPayment('b1', { provider: 'stripe', paymentIntentId: 'pi_1', amount: 429000 })).resolves.toBe('refunded_late');
+    expect(emails.refundedLate).not.toHaveBeenCalled();
   });
 
   it('handles losing the race with the expiry worker', async () => {
@@ -231,6 +239,20 @@ describe('PaymentsService.handleWebhook', () => {
     const { m, service } = setup([[{ id: 'evt_2' }], [], []], { stripe });
     await service.handleWebhook(body, 'sig');
     expect(m.ops('update')[0]!.set).toMatchObject({ refundedAmount: 210000, status: 'partially_refunded' });
+  });
+
+  it('refund.failed re-reads the charge so the payment shows what was really refunded', async () => {
+    const stripe = fakeStripe();
+    stripe.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_3',
+      type: 'refund.failed',
+      data: { object: { id: 're_1', charge: 'ch_1', amount: 297000, failure_reason: 'unknown', metadata: { bookingId: 'b1' } } },
+    });
+    stripe.charges.retrieve.mockResolvedValue({ payment_intent: 'pi_1', amount_refunded: 0, refunded: false });
+    const { m, service } = setup([[{ id: 'evt_3' }], [], []], { stripe });
+    await service.handleWebhook(body, 'sig');
+    expect(stripe.charges.retrieve).toHaveBeenCalledWith('ch_1');
+    expect(m.ops('update')[0]!.set).toMatchObject({ refundedAmount: 0, status: 'succeeded' });
   });
 });
 

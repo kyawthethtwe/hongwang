@@ -19,5 +19,6 @@ export const EMAIL_TEMPLATE_EVENT: { readonly [T in EmailTemplate]: Notification
   'booking-confirmed-host': 'booking_updates',
   'booking-cancelled-guest': 'booking_updates',
   'booking-cancelled-host': 'booking_updates',
+  'booking-payment-refunded-late': 'booking_updates',
   'listing-published-host': null,
 };

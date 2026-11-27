@@ -5,6 +5,7 @@ import * as bookingCancelledHost from './booking-cancelled-host';
 import * as bookingConfirmedGuest from './booking-confirmed-guest';
 import * as bookingConfirmedHost from './booking-confirmed-host';
 import * as bookingExpiredGuest from './booking-expired-guest';
+import * as bookingPaymentRefundedLate from './booking-payment-refunded-late';
 import * as bookingRejectedGuest from './booking-rejected-guest';
 import * as bookingRequestSentGuest from './booking-request-sent-guest';
 import * as bookingRequestedHost from './booking-requested-host';
@@ -33,6 +34,7 @@ export const EMAIL_RENDERERS: { readonly [T in EmailTemplate]: EmailRenderer<T> 
   'booking-confirmed-host': bookingConfirmedHost.render,
   'booking-cancelled-guest': bookingCancelledGuest.render,
   'booking-cancelled-host': bookingCancelledHost.render,
+  'booking-payment-refunded-late': bookingPaymentRefundedLate.render,
   'listing-published-host': listingPublishedHost.render,
 };
 

@@ -33,6 +33,8 @@ pnpm typecheck                     # all packages
 pnpm lint                          # ESLint, all packages (type-aware rules in eslint.base.mjs); CI runs it too
 pnpm --filter @hongwang/api test   # unit tests (jest + swc)
 pnpm --filter @hongwang/api test:e2e  # needs DATABASE_URL_TEST (Postgres with PostGIS)
+pnpm --filter @hongwang/web test   # web unit tests (Vitest, *.test.ts next to the code)
+pnpm --filter @hongwang/web test:e2e  # Playwright golden paths against a running, seeded app (pnpm dev); E2E_BASE_URL for staging
 ```
 
 ## Conventions
