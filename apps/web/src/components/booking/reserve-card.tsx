@@ -27,7 +27,7 @@ import { ApiError, errorMessage } from '@/lib/api/client';
 import { loginHref } from '@/lib/auth/next-path';
 import { useSession } from '@/lib/auth/session';
 import { formatDay, formatTHB, pluralize } from '@/lib/format';
-import { useCreateBooking, useStayQuote } from '@/lib/queries/bookings';
+import { isRetryableCreateError, useCreateBooking, useStayQuote } from '@/lib/queries/bookings';
 import { useAvailability } from '@/lib/queries/listings';
 import { cn } from '@/lib/utils';
 import { reasonMessage } from './booking-format';
@@ -138,6 +138,12 @@ function useReserveForm(listing: ListingDetailDto, initial: Range, initialGuests
   );
   const quote = useStayQuote(stay ? quoteInput : null);
   const create = useCreateBooking();
+  /**
+   * One Idempotency-Key per Reserve attempt, kept while that attempt's outcome is unknown (no
+   * response, or a 5xx) so pressing Reserve again can't make a second booking. A different stay or
+   * any definite answer starts a new attempt. The message isn't part of the stay: the API ignores it on a retry.
+   */
+  const attempt = useRef<{ stay: string; key: string } | null>(null);
 
   const quoteMatches =
     !!quote.data && !!quoteInput && !!stay && quoteInput.checkIn === stay.checkIn && quoteInput.checkOut === stay.checkOut && quoteInput.guests === guests;
@@ -166,16 +172,20 @@ function useReserveForm(listing: ListingDetailDto, initial: Range, initialGuests
       setError(`Add a short message so ${listing.host.firstName} knows who’s coming.`);
       return;
     }
+    const stayKey = `${listing.id}|${stay.checkIn}|${stay.checkOut}|${guests}`;
+    if (attempt.current?.stay !== stayKey) attempt.current = { stay: stayKey, key: crypto.randomUUID() };
     try {
       const booking = await create.mutateAsync({
-        listingId: listing.id,
-        ...stay,
-        guests,
-        message: message.trim() || undefined,
+        input: { listingId: listing.id, ...stay, guests, message: message.trim() || undefined },
+        idempotencyKey: attempt.current.key,
       });
+      attempt.current = null;
       if (booking.status === 'payment_hold') router.push(`/checkout/${booking.id}`);
-      else setRequestSent({ id: booking.id });
+      else if (booking.status === 'requested') setRequestSent({ id: booking.id });
+      // A retry found an earlier attempt that has since ended (its hold ran out, say).
+      else setError('Your earlier attempt for these dates has ended. Please try again.');
     } catch (err) {
+      if (!isRetryableCreateError(err)) attempt.current = null;
       if (err instanceof ApiError && err.code === ERROR_CODES.datesUnavailable) {
         setError('Someone just booked some of these nights. Please pick different dates.');
         void qc.invalidateQueries({ queryKey: ['listings', 'availability', listing.id] });

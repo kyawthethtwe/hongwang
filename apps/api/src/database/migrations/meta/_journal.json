@@ -22,6 +22,13 @@
       "when": 1794695619146,
       "tag": "0002_booking_constraints",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795778732024,
+      "tag": "0003_booking_idempotency_key",
+      "breakpoints": true
     }
   ]
 }

@@ -1,18 +1,19 @@
 'use client';
 
-import type {
-  BookingDto,
-  CancelBookingInput,
-  CreateBookingInput,
-  MyBookingsQuery,
-  PaymentIntentDto,
-  PaymentMethod,
-  QuoteDto,
-  QuoteInput,
-  RefundQuote,
+import {
+  IDEMPOTENCY_KEY_HEADER,
+  type BookingDto,
+  type CancelBookingInput,
+  type CreateBookingInput,
+  type MyBookingsQuery,
+  type PaymentIntentDto,
+  type PaymentMethod,
+  type QuoteDto,
+  type QuoteInput,
+  type RefundQuote,
 } from '@hongwang/shared';
 import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
-import { apiFetch } from '@/lib/api/client';
+import { ApiError, apiFetch } from '@/lib/api/client';
 
 /**
  * Guest-side booking and payment queries. Owner: Bookings & Payments module.
@@ -63,10 +64,19 @@ export function useStayQuote(input: QuoteInput | null) {
   });
 }
 
+/** No response, or a 5xx: the booking may or may not exist, so retry with the same Idempotency-Key. */
+export const isRetryableCreateError = (err: unknown) => err instanceof ApiError && (err.status === 0 || err.status >= 500);
+
+/**
+ * POST /bookings with an Idempotency-Key. Retries twice on network errors and 5xx; that's safe
+ * because every retry carries the same key, so the API answers with the booking it already made.
+ */
 export function useCreateBooking() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: CreateBookingInput) => apiFetch<BookingDto>('/bookings', { method: 'POST', body: input }),
+    mutationFn: ({ input, idempotencyKey }: { input: CreateBookingInput; idempotencyKey: string }) =>
+      apiFetch<BookingDto>('/bookings', { method: 'POST', body: input, headers: { [IDEMPOTENCY_KEY_HEADER]: idempotencyKey } }),
+    retry: (failures, err) => failures < 2 && isRetryableCreateError(err),
     onSuccess: (dto) => afterBookingChange(qc, dto),
   });
 }

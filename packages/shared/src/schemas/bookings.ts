@@ -28,9 +28,13 @@ import type { PublicUserDto } from './users';
  *   GET  /bookings/:id/cancellation-quote   -                    -> RefundQuote    (for the caller's side)
  *   POST /bookings/:id/cancel               CancelBookingInput   -> BookingDto
  *
+ * POST /bookings takes an optional Idempotency-Key header (IDEMPOTENCY_KEY_HEADER in common.ts):
+ * a retry with the same key returns the booking the first attempt created, in whatever state it is now.
+ *
  * Errors: 409 DATES_UNAVAILABLE (exclusion constraint), 409 INVALID_TRANSITION,
  *         410 HOLD_EXPIRED, 403 OWN_LISTING (guest is the host),
- *         400 VALIDATION_FAILED with details { reasons: QuoteReason[] } when the stay breaks a listing rule.
+ *         400 VALIDATION_FAILED with details { reasons: QuoteReason[] } when the stay breaks a listing rule,
+ *         422 IDEMPOTENCY_KEY_REUSED when the key was already used for a different stay.
  *
  * /bookings/mine tabs: upcoming = requested | payment_hold | confirmed with check_out >= today (Bangkok);
  * past = completed, or confirmed with check_out < today; cancelled = cancelled | rejected | expired.

@@ -166,6 +166,75 @@ describe('BookingsService.create', () => {
   });
 });
 
+describe('BookingsService.create with an Idempotency-Key', () => {
+  const KEY = 'c0ffee00-1111-4222-8333-444455556666';
+  const holdUntil = new Date(NOW.getTime() + PAYMENT_HOLD_TTL_MS);
+  const held = (over: Record<string, unknown> = {}) =>
+    booking({ id: 'held', status: 'payment_hold', holdExpiresAt: holdUntil, idempotencyKey: KEY, ...over });
+
+  it('first attempt: stores the key on the new booking', async () => {
+    const { m, service } = setup([[], ...createPrelude(), [{ id: 'new' }], []]);
+    await expect(service.create(GUEST, stay, NOW, KEY)).resolves.toEqual({ id: 'new' });
+    expect(m.ops('insert')[0]!.values).toMatchObject({ idempotencyKey: KEY, guestId: GUEST.id });
+    expect(m.remaining()).toBe(0);
+  });
+
+  it('retry: returns the booking the first attempt made, with no new insert and no 409', async () => {
+    const { m, service, timeouts, read } = setup([[held()]]);
+    await expect(service.create(GUEST, stay, NOW, KEY)).resolves.toEqual({ id: 'held' });
+    expect(m.ops('insert')).toHaveLength(0);
+    expect(m.transactions()).toBe(0);
+    expect(read.findDto).toHaveBeenCalledWith('held', GUEST);
+    // Re-scheduled in case the first attempt died before it got there (deduplicated by job id).
+    expect(timeouts.expireHoldAt).toHaveBeenCalledWith('held', holdUntil);
+  });
+
+  it('retry of a request to book: re-runs its expiry job and (once-only) emails', async () => {
+    const requestUntil = new Date(NOW.getTime() + 24 * 3600_000);
+    const { service, timeouts, emails } = setup([
+      [held({ id: 'req', status: 'requested', holdExpiresAt: null, requestExpiresAt: requestUntil })],
+    ]);
+    await service.create(GUEST, { ...stay, message: 'Hi Ploy!' }, NOW, KEY);
+    expect(timeouts.expireRequestAt).toHaveBeenCalledWith('req', requestUntil);
+    expect(emails.requested).toHaveBeenCalledWith('req');
+  });
+
+  it('retry after the booking moved on: returns it as it is now, without scheduling anything', async () => {
+    const { service, timeouts, emails } = setup([[held({ status: 'expired' })]]);
+    await expect(service.create(GUEST, stay, NOW, KEY)).resolves.toEqual({ id: 'held' });
+    expect(timeouts.expireHoldAt).not.toHaveBeenCalled();
+    expect(emails.requested).not.toHaveBeenCalled();
+  });
+
+  it('the same key for a different stay is 422 IDEMPOTENCY_KEY_REUSED', async () => {
+    const { service } = setup([[held()]]);
+    await expect(service.create(GUEST, { ...stay, guests: 1 }, NOW, KEY)).rejects.toMatchObject({
+      status: 422,
+      code: ERROR_CODES.idempotencyKeyReused,
+    });
+  });
+
+  it('a concurrent request with the same key won the key row: answers with its booking', async () => {
+    const { service } = setup([
+      [],
+      ...createPrelude(),
+      throwing(pgError('23505', 'bookings_guest_idempotency_key_unique')),
+      [held()],
+    ]);
+    await expect(service.create(GUEST, stay, NOW, KEY)).resolves.toEqual({ id: 'held' });
+  });
+
+  it('a concurrent request with the same key took the dates first: answers with its booking', async () => {
+    const { service } = setup([[], ...createPrelude(), throwing(pgError('23P01', 'bookings_no_overlap')), [held()]]);
+    await expect(service.create(GUEST, stay, NOW, KEY)).resolves.toEqual({ id: 'held' });
+  });
+
+  it('dates taken by someone else stay a 409', async () => {
+    const { service } = setup([[], ...createPrelude(), throwing(pgError('23P01', 'bookings_no_overlap')), []]);
+    await expect(service.create(GUEST, stay, NOW, KEY)).rejects.toMatchObject({ status: 409, code: ERROR_CODES.datesUnavailable });
+  });
+});
+
 describe('BookingsService.quote', () => {
   it('prices the stay and lists every reason it can’t be booked', async () => {
     const { service } = setup([[listing()], [{ id: 'held' }], [], []]);
