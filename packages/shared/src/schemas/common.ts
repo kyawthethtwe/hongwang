@@ -59,6 +59,7 @@ export const ERROR_CODES = {
   holdExpired: 'HOLD_EXPIRED',
   ownListing: 'OWN_LISTING',
   idempotencyKeyReused: 'IDEMPOTENCY_KEY_REUSED',
+  refundFailed: 'REFUND_FAILED',
   rateLimited: 'RATE_LIMITED',
   unsupportedMediaType: 'UNSUPPORTED_MEDIA_TYPE',
   invalidCredentials: 'INVALID_CREDENTIALS',

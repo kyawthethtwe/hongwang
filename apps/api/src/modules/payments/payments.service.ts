@@ -263,17 +263,20 @@ export class PaymentsService {
         return;
       }
       case 'charge.refunded': {
-        const charge = event.data.object;
-        const piId = typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id;
-        if (!piId) return;
-        await this.db
-          .update(payments)
-          .set({
-            refundedAmount: charge.amount_refunded,
-            status: charge.refunded ? 'refunded' : 'partially_refunded',
-            updatedAt: new Date(),
-          })
-          .where(eq(payments.stripePaymentIntentId, piId));
+        await this.syncRefunds(event.data.object);
+        return;
+      }
+      case 'refund.failed': {
+        // The money went back to our Stripe balance, not to the guest (e.g. a PromptPay refund to a
+        // wrong bank account). Re-read the charge so the payment shows what was really refunded.
+        const refund = event.data.object;
+        const chargeId = typeof refund.charge === 'string' ? refund.charge : refund.charge?.id;
+        if (!chargeId) return;
+        await this.syncRefunds(await stripe.charges.retrieve(chargeId));
+        this.logger.error(
+          { refund: refund.id, bookingId: refund.metadata?.bookingId, amount: refund.amount, reason: refund.failure_reason },
+          'Refund failed: the guest has not been paid back. Follow up by hand.',
+        );
         return;
       }
       default:
@@ -386,6 +389,17 @@ export class PaymentsService {
     } else {
       await tx.insert(payments).values({ bookingId: b.id, provider: 'simulated', currency: 'THB', method: info.method ?? 'card', ...values });
     }
+  }
+
+  /** Sets the payment's refunded amount and status from the charge, Stripe's own record. */
+  private async syncRefunds(charge: Stripe.Charge) {
+    const piId = typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id;
+    if (!piId) return;
+    const status = charge.refunded ? 'refunded' : charge.amount_refunded > 0 ? 'partially_refunded' : 'succeeded';
+    await this.db
+      .update(payments)
+      .set({ refundedAmount: charge.amount_refunded, status, updatedAt: new Date() })
+      .where(eq(payments.stripePaymentIntentId, piId));
   }
 
   private async chargeDetails(stripe: Stripe, pi: Stripe.PaymentIntent): Promise<{ last4: string | null; method: PaymentMethod | null }> {

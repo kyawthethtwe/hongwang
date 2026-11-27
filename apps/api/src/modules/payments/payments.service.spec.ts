@@ -240,6 +240,20 @@ describe('PaymentsService.handleWebhook', () => {
     await service.handleWebhook(body, 'sig');
     expect(m.ops('update')[0]!.set).toMatchObject({ refundedAmount: 210000, status: 'partially_refunded' });
   });
+
+  it('refund.failed re-reads the charge so the payment shows what was really refunded', async () => {
+    const stripe = fakeStripe();
+    stripe.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_3',
+      type: 'refund.failed',
+      data: { object: { id: 're_1', charge: 'ch_1', amount: 297000, failure_reason: 'unknown', metadata: { bookingId: 'b1' } } },
+    });
+    stripe.charges.retrieve.mockResolvedValue({ payment_intent: 'pi_1', amount_refunded: 0, refunded: false });
+    const { m, service } = setup([[{ id: 'evt_3' }], [], []], { stripe });
+    await service.handleWebhook(body, 'sig');
+    expect(stripe.charges.retrieve).toHaveBeenCalledWith('ch_1');
+    expect(m.ops('update')[0]!.set).toMatchObject({ refundedAmount: 0, status: 'succeeded' });
+  });
 });
 
 describe('PaymentsService.simulate', () => {

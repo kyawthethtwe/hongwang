@@ -1,4 +1,4 @@
-import type { Satang } from '@hongwang/shared';
+import { ERROR_CODES, type Satang } from '@hongwang/shared';
 import { Injectable, Logger } from '@nestjs/common';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { AppException } from '../../common/errors';
@@ -26,6 +26,8 @@ export class RefundsService {
    * Call it inside the transaction that cancels the booking: if Stripe refuses, the cancellation
    * rolls back too. The Stripe call is idempotent per booking and purpose, so a retry after a
    * failed commit can't refund twice; `charge.refunded` webhooks later sync the exact amount.
+   * If Stripe refuses (for example a PromptPay refund the account can't email the guest about),
+   * it's 502 REFUND_FAILED and the caller's transaction rolls back, so nothing changes.
    * Returns what was refunded (0 when nothing was charged).
    */
   async refund(tx: DbOrTx, bookingId: string, amount: Satang, purpose: RefundPurpose): Promise<Satang> {
@@ -46,10 +48,19 @@ export class RefundsService {
       if (!stripe) {
         throw new AppException(503, 'PAYMENTS_UNAVAILABLE', 'Refunds are unavailable right now. Please try again later.');
       }
-      await stripe.refunds.create(
-        { payment_intent: pay.stripePaymentIntentId, amount: value, metadata: { bookingId, purpose } },
-        { idempotencyKey: `refund-${purpose}-${bookingId}` },
-      );
+      try {
+        await stripe.refunds.create(
+          { payment_intent: pay.stripePaymentIntentId, amount: value, metadata: { bookingId, purpose } },
+          { idempotencyKey: `refund-${purpose}-${bookingId}` },
+        );
+      } catch (err) {
+        this.logger.error({ err, bookingId, purpose, paymentIntent: pay.stripePaymentIntentId }, 'Stripe refused the refund');
+        throw new AppException(
+          502,
+          ERROR_CODES.refundFailed,
+          'We couldn’t start the refund, so nothing was changed. Please try again in a few minutes, or contact us.',
+        );
+      }
     }
 
     const refunded = pay.refundedAmount + value;
