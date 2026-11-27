@@ -33,6 +33,7 @@ import {
   expireStaleHolds,
   hasBlockedNight,
   hasHeldOverlap,
+  lockListingDates,
   priceOverridesFor,
 } from './booking-availability';
 import { BookingEmails } from './booking-emails.service';
@@ -173,6 +174,7 @@ export class BookingsService {
 
     const created = await this.withRefRetry(() =>
       this.db.transaction(async (tx) => {
+        await lockListingDates(tx, listing.id);
         // Free nights held by payment holds that ran out, then re-check the host's blocks.
         const expired = await expireStaleHolds(tx, listing.id, now);
         if (await hasBlockedNight(tx, listing.id, input.checkIn, input.checkOut)) throw datesUnavailable();
@@ -284,6 +286,7 @@ export class BookingsService {
     let expired: string[];
     try {
       expired = await this.db.transaction(async (tx) => {
+        await lockListingDates(tx, b.listingId);
         const stale = await expireStaleHolds(tx, b.listingId, now);
         if (await hasBlockedNight(tx, b.listingId, b.checkIn, b.checkOut)) {
           throw datesUnavailable('Some of these nights are blocked in your calendar. Unblock them first.');

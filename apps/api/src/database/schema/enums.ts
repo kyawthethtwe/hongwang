@@ -23,4 +23,5 @@ export const bookingStatusEnum = pgEnum('booking_status', BOOKING_STATUSES);
 export const bookingActorEnum = pgEnum('booking_actor', BOOKING_ACTORS);
 export const paymentStatusEnum = pgEnum('payment_status', PAYMENT_STATUSES);
 export const paymentMethodEnum = pgEnum('payment_method', PAYMENT_METHODS);
-export const emailStatusEnum = pgEnum('email_status', ['queued', 'sent', 'failed']);
+/** 'skipped': the user's preferences turned the email off (email_log.error says why). */
+export const emailStatusEnum = pgEnum('email_status', ['queued', 'sent', 'failed', 'skipped']);

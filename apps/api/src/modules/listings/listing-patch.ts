@@ -10,8 +10,8 @@ export type ListingPatch = Partial<typeof listings.$inferInsert>;
 /**
  * Turns a partial editor save into column updates. Pure (no DB), so it is unit tested.
  * - `exactLocation` sets `location` and recomputes the public pin (150-350 m away, stable per id).
- *   Unless the save also sends `area`, `area` follows the pin to the nearest known neighbourhood
- *   (falling back to the subdistrict).
+ *   When the listing has no area (none stored, or this save clears it), the area comes from the pin:
+ *   the nearest known neighbourhood, else the subdistrict. An area the host typed is never replaced.
  * - min/max nights are checked against each other after merging with the stored values.
  */
 export function buildListingPatch(row: ListingRow, input: UpdateListingInput): ListingPatch {
@@ -25,10 +25,10 @@ export function buildListingPatch(row: ListingRow, input: UpdateListingInput): L
     const location = toXY(exactLocation);
     patch.location = location;
     patch.publicLocation = publicLocationFor(row.id, location);
-    if (input.area === undefined) {
-      const place = nearestPlace(exactLocation);
-      const area = place?.name ?? input.subdistrict ?? row.subdistrict ?? row.area;
-      if (area) patch.area = area;
+    const area = input.area ?? row.area;
+    if (!area.trim()) {
+      const fromPin = nearestPlace(exactLocation)?.name || input.subdistrict?.trim() || row.subdistrict?.trim();
+      if (fromPin) patch.area = fromPin;
     }
   }
 

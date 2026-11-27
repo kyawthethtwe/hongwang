@@ -212,6 +212,17 @@ export class ListingsService {
       .where(and(eq(listings.id, id), eq(listings.status, 'draft')));
   }
 
+  /**
+   * Account deletion (UsersService.deleteAccount calls this inside its transaction): pauses and
+   * soft-deletes every listing of the host, so none can be found or booked again.
+   */
+  async removeAllForHost(hostId: string, tx: DbOrTx, now = new Date()): Promise<void> {
+    await tx
+      .update(listings)
+      .set({ status: 'paused', deletedAt: now })
+      .where(and(eq(listings.hostId, hostId), isNull(listings.deletedAt)));
+  }
+
   // ---------------------------------------------------------------- helpers
 
   /** Loads a non-deleted listing and checks CASL `update` (owner or admin). 404 / 403. */

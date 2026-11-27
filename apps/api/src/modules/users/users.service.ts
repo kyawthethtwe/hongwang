@@ -19,6 +19,7 @@ import { InjectDb, type Database, type DbOrTx } from '../../database/database.mo
 import { bookings, listings, users, verificationTokens } from '../../database/schema';
 import { StorageService } from '../../infra/storage/storage.service';
 import { hashPassword, verifyPassword } from '../auth/passwords';
+import { ListingsService } from '../listings/listings.service';
 import { SessionsService } from './sessions.service';
 import { toMeDto, toSessionDto, type UserRow } from './users.mappers';
 
@@ -38,6 +39,7 @@ export class UsersService {
     private readonly sessions: SessionsService,
     private readonly storage: StorageService,
     @Inject(ENV) private readonly env: Env,
+    private readonly listingsService: ListingsService,
   ) {}
 
   // ---- lookups ----
@@ -236,8 +238,8 @@ export class UsersService {
       await tx
         .update(users)
         .set({
-          // users_email_or_phone requires one of them: keep an undeliverable tombstone address.
-          email: `deleted+${userId}@hongwang.invalid`,
+          // users_email_or_phone lets a deleted user have neither.
+          email: null,
           phone: null,
           googleId: null,
           passwordHash: null,
@@ -249,10 +251,7 @@ export class UsersService {
           deletedAt: now,
         })
         .where(eq(users.id, userId));
-      await tx
-        .update(listings)
-        .set({ status: 'paused', deletedAt: now })
-        .where(and(eq(listings.hostId, userId), isNull(listings.deletedAt)));
+      await this.listingsService.removeAllForHost(userId, tx, now);
       await tx.delete(verificationTokens).where(eq(verificationTokens.userId, userId));
       await this.sessions.revokeAll(userId, {}, tx);
     });

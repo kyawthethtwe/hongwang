@@ -38,7 +38,9 @@ import type { PublicUserDto } from './users';
  *
  * Notes for the editor (design C4):
  * - PATCH is partial; send one section at a time. When `exactLocation` changes the API recomputes the
- *   public (approximate) pin, and also `area` from the nearest known neighbourhood unless `area` is sent.
+ *   public (approximate) pin, and fills `area` from the nearest known neighbourhood if the listing
+ *   has none (an empty `area` in the same save counts as none). A typed area is never replaced.
+ *   The editor edits `HostListingDto.storedArea`, not the display `area`.
  * - Photo upload: POST upload-url -> PUT the file to `uploadUrl` with `headers` -> POST photos { key }.
  *   Up to MAX_LISTING_PHOTOS per listing; position 0 is the cover.
  * - Submit needs every LISTING_EDITOR_SECTIONS entry complete (see `completeness`) and at least
@@ -138,6 +140,8 @@ export interface AvailabilityDto {
 /** Host-side listing, includes the exact address. */
 export interface HostListingDto extends Omit<ListingDetailDto, 'host'> {
   hostId: string;
+  /** The area as saved, '' when none is set (`area` then shows a fallback such as the subdistrict). */
+  storedArea: string;
   addressLine: string | null;
   postcode: string | null;
   exactLocation: LatLng | null;

@@ -44,7 +44,8 @@ export const users = pgTable(
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) => [check('users_email_or_phone', sql`${t.email} is not null or ${t.phone} is not null`)],
+  // A deleted account keeps its row (bookings point at it) but neither email nor phone.
+  (t) => [check('users_email_or_phone', sql`${t.email} is not null or ${t.phone} is not null or ${t.deletedAt} is not null`)],
 );
 
 /** Refresh-token sessions ("Where you're signed in"). The refresh token is stored hashed. */
@@ -112,5 +113,9 @@ export const emailLog = pgTable(
     createdAt: createdAt(),
     sentAt: tstz('sent_at'),
   },
-  (t) => [index('email_log_user_idx').on(t.userId)],
+  (t) => [
+    index('email_log_user_idx').on(t.userId),
+    // EmailLogRepository looks up a job's row by job_id and created_at on every run.
+    index('email_log_job_idx').on(t.jobId, t.createdAt).where(sql`${t.jobId} is not null`),
+  ],
 );
